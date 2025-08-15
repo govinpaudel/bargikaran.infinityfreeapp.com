@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { collapseToast, toast } from "react-toastify";
 import "./app.css";
 import { Circles } from "react-loader-spinner";
 
 const App = () => {
   const Url = import.meta.env.VITE_API_URL + "bargikaran/";
-  const initialData={
+  const initialData = {
     type: "getalloffices",
     office_id: 0,
     napa_id: 0,
@@ -22,31 +22,32 @@ const App = () => {
   const [wards, setWards] = useState();
   const [details, setDetails] = useState();
   const [loading, setloading] = useState(false);
-  const [msg,setmsg]=useState('खोजिका लागी विवरण प्रविष्ट गर्नुहोस्')
+  const [msg, setmsg] = useState('खोजिका लागी विवरण प्रविष्ट गर्नुहोस्')
 
-  const handleRefresh=()=>{
-  setData(initialData);
+  const handleRefresh = () => {
+    setData(initialData);
+    setDetails({})
   }
-  
-  function replaceNepaliDigits(e) { 
-  const nepaliToEnglishMap = {
-    '०': '0',
-    '१': '1',
-    '२': '2',
-    '३': '3',
-    '४': '4',
-    '५': '5',
-    '६': '6',
-    '७': '7',
-    '८': '8',
-    '९': '9'
-  };
-  const item=e.target.value;
-  const item1= item.replace(/[०१२३४५६७८९]/g, match => nepaliToEnglishMap[match]);
-  console.log(item1)  
-  setData({...data,"kitta_no":item1})
-}
-  const handleChange = (e) => {    
+
+  function replaceNepaliDigits(e) {
+    const nepaliToEnglishMap = {
+      '०': '0',
+      '१': '1',
+      '२': '2',
+      '३': '3',
+      '४': '4',
+      '५': '5',
+      '६': '6',
+      '७': '7',
+      '८': '8',
+      '९': '9'
+    };
+    const item = e.target.value;
+    const item1 = item.replace(/[०१२३४५६७८९]/g, match => nepaliToEnglishMap[match]);
+    console.log(item1)
+    setData({ ...data, "kitta_no": item1 })
+  }
+  const handleChange = (e) => {
     if (e.target.name == "office_id") {
       setData({
         ...data,
@@ -94,7 +95,7 @@ const App = () => {
         });
       }
     }
-   
+
   };
   useEffect(() => {
     loaddata();
@@ -120,7 +121,7 @@ const App = () => {
     } else if (data.type == "getdetails") {
       setDetails(response.data.data);
     }
-     setloading(false);
+    setloading(false);
   };
   useEffect(() => {
     document.title = "वर्गिकरण खोजी";
@@ -145,140 +146,130 @@ const App = () => {
         <button onClick={handleRefresh} className="btn btn-success text-center">डाटा रिफ्रेस गर्नुहोस्</button>
       </div>
       <div className="row text-center">
-      <div className="col-12 col-lg-auto">
-        <select
-          name="office_id"
-          className="form-control"
-          onChange={handleChange}
-          value={data.office_id}
-        >
-          <option>कार्यालय छान्नुहोस्</option>
-          {offices
-            ? offices.map((data) => {
-              return (
-                <option key={data.office_id} value={data.office_id}>
-                  {data.office_name}
-                </option>
-              );
-            })
-            : null}
-        </select>
-      </div>
-      <div className="col-12 col-lg-auto">
-        <select
-          name="napa_id"
-          className="form-control"
-          onChange={handleChange}
-          value={data.napa_id}
-        >
-          <option>नगरपालिका छान्नुहोस्</option>
-          {napas
-            ? napas.map((data) => {
-              return (
-                <option key={data.napa_id} value={data.napa_id}>
-                  {data.napa_name}
-                </option>
-              );
-            })
-            : null}
-        </select>
-      </div>
-      <div className="col-12 col-lg-auto">
-        <select
-          name="gabisa_id"
-          className="form-control"
-          onChange={handleChange}
-          value={data.gabisa_id}
-        >
-          <option>गा.वि.स छान्नुहोस्</option>
-          {gapas
-            ? gapas.map((data) => {
-              return (
-                <option key={data.gabisa_id} value={data.gabisa_id}>
-                  {data.gabisa_name}
-                </option>
-              );
-            })
-            : null}
-        </select>
-      </div>
-      <div className="col-12 col-lg-auto">
-        <select
-          name="ward_no"
-          className="form-control"
-          onChange={handleChange}
-          value={data.ward_no}
-         
-        >
-          <option>वडा नं छान्नुहोस्</option>
-          {wards
-            ? wards.map((data) => {
-              return (
-                <option key={data.ward_no} value={data.ward_no}>
-                  {data.ward_no}
-                </option>
-              );
-            })
-            : null}
-        </select>
-      </div>
-      <div className="col-12 col-lg-auto">
-        <input
-          className="form-control"
-          type="text"
-          name="kitta_no"
-          placeholder="कित्ता नं प्रविष्ट गर्नुहोस्"
-          onChange={handleChange}
-          value={data.kitta_no}
-          onKeyUp={replaceNepaliDigits}
-          required
-        />
-      </div>
-</div>
-      {details ? (
-        details.length > 0 ? (
-          details.map((data) => {
-            return (
-              <div className="container text-center">
-              <div className="row">
-                <div className="col-12 col-lg-auto">
-                  साविक गा.वि.सः -{data.gabisa_name} ।
-                </div>
-                <div className="col-12 col-lg-auto">
-                  वडा नंः - {data.ward_no} ।
-                </div>
-                <div className="col-12 col-lg-auto">
-                  सिट नंः - {data.sheet_no} ।
-                </div>
-                <div className="col-12 col-lg-auto">
-                  कित्ता नंः - {data.kitta_no} ।
-                </div>
-                <div className="col-12 col-lg-auto">
-                  वर्गिकरणः - {data.bargikaran} ।
-                </div>
-                <div className="col-12 col-lg-auto">
-                  कैफियत - {data.remarks} ।
-                </div>
-              </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="bargikaran__result">
-            <h5 className="col-12 col-lg-auto navy">
-              कुनै पनि रेकर्ड फेला परेन ।
-            </h5>
-          </div>
-        )
-      ) : (
-        <div className="row">
-          <h6 className="text-center navy">
-           {msg}
-          </h6>
+        <div className="col-12 col-lg-auto">
+          <select
+            name="office_id"
+            className="form-control"
+            onChange={handleChange}
+            value={data.office_id}
+          >
+            <option>कार्यालय छान्नुहोस्</option>
+            {offices
+              ? offices.map((data) => {
+                return (
+                  <option key={data.office_id} value={data.office_id}>
+                    {data.office_name}
+                  </option>
+                );
+              })
+              : null}
+          </select>
         </div>
-      )
-      }
+        <div className="col-12 col-lg-auto">
+          <select
+            name="napa_id"
+            className="form-control"
+            onChange={handleChange}
+            value={data.napa_id}
+          >
+            <option>नगरपालिका छान्नुहोस्</option>
+            {napas
+              ? napas.map((data) => {
+                return (
+                  <option key={data.napa_id} value={data.napa_id}>
+                    {data.napa_name}
+                  </option>
+                );
+              })
+              : null}
+          </select>
+        </div>
+        <div className="col-12 col-lg-auto">
+          <select
+            name="gabisa_id"
+            className="form-control"
+            onChange={handleChange}
+            value={data.gabisa_id}
+          >
+            <option>गा.वि.स छान्नुहोस्</option>
+            {gapas
+              ? gapas.map((data) => {
+                return (
+                  <option key={data.gabisa_id} value={data.gabisa_id}>
+                    {data.gabisa_name}
+                  </option>
+                );
+              })
+              : null}
+          </select>
+        </div>
+        <div className="col-12 col-lg-auto">
+          <select
+            name="ward_no"
+            className="form-control"
+            onChange={handleChange}
+            value={data.ward_no}
 
+          >
+            <option>वडा नं छान्नुहोस्</option>
+            {wards
+              ? wards.map((data) => {
+                return (
+                  <option key={data.ward_no} value={data.ward_no}>
+                    {data.ward_no}
+                  </option>
+                );
+              })
+              : null}
+          </select>
+        </div>
+        <div className="col-12 col-lg-auto">
+          <input
+            className="form-control"
+            type="text"
+            name="kitta_no"
+            placeholder="कित्ता नं प्रविष्ट गर्नुहोस्"
+            onChange={handleChange}
+            value={data.kitta_no}
+            onKeyUp={replaceNepaliDigits}
+            required
+            maxLength={5}
+            inputMode="numeric"
+          />
+        </div>
+      </div>
+      <div className="container text-center">
+        <table className="table table-sm table-stripped table-bordered">
+          {details ? details.length>0?
+            (<thead>              
+              <th>गा.वि.स</th>
+              <th>वडा</th>
+              <th>सिट</th>
+              <th>कित्ता</th>
+              <th>वर्गिकरण</th>
+              <th>कैफियत</th>
+            </thead>)
+            : null:null}
+          <tbody>
+            {details ? details.length > 0 ? details.map((item) => {
+              return (<tr>
+                <td>{item.gabisa_name}</td>
+                <td>{item.ward_no}</td>
+                <td>{item.sheet_no}</td>
+                <td>{item.kitta_no}</td>
+                <td>{item.bargikaran}</td>
+                <td>{item.remarks}</td>
+              </tr>)
+            }) : (<tr><td colspan="05"> कुनै पनि रेकर्ड फेला परेन ।</td></tr>)  : (<tr><td colspan="05">{msg}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <div className="row">
+        <h6 className="text-center text-green">
+          <a href="https://www.facebook.com/govinda.paudel.196711">डिजाईन तथा निर्माणः गोविन्द पौडेल । 9846805409</a>
+
+        </h6>
+      </div>
     </section>
   );
 };
