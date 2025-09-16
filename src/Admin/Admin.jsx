@@ -1,48 +1,13 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { clearAuthToken,getDataByDate,sendRecordsToServer } from '@/app/_actions/action';
+import { useNavigate } from 'react-router-dom';
+import { getDataByDate, sendRecordsToServer } from '../Actions/Action';
 import { toast } from "react-toastify";
-
-export type BargikaranRecord = {
-  id: number;
-  office_id: number | null;
-  office_name: string | null;
-  napa_id: number | null;
-  napa_name: string | null;
-  gabisa_id: number | null;
-  gabisa_name: string | null;
-  ward_no: number | null;
-  sheet_no: string | null;
-  kitta_no: number | null;
-  area: string | null;
-  bargikaran: string | null;
-  remarks: string | null;
-  sno: number | null;
-  created_at: string | null;
-  created_by_user_id: number | null;
-  updated_at: string | null;
-  updated_by_user_id: number | null;
-};
-
-const ManagePage = () => {
-  const router = useRouter();
-  const [username, setUsername] = useState<string | null>(null);
+import { useState } from 'react';
+const Admin = () => {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
-  const [records, setRecords] = useState<BargikaranRecord[]>([]);;
-
-  useEffect(() => {
-    const token = localStorage.getItem('api_token');
-    const user = localStorage.getItem('username');
-    
-    if (!token || !user) {
-      router.push('/admin'); // not logged in → go back to login
-    } else {
-      setUsername(user);
-    }
-  }, [router]);
-
-  const handleUpload = async () =>{
+  const [records, setRecords] = useState([]);
+const handleUpload = async () =>{
     if(records.length==0){
       toast.info("No Data to update to server");
     }
@@ -53,29 +18,25 @@ const ManagePage = () => {
     }
   }
   }
-  
-  const handleLogout = () => {
-    localStorage.removeItem('api_token');
-    localStorage.removeItem('username');
-    clearAuthToken(); // remove from axios headers
-    router.push('/admin'); // back to login
-  };
 
   const handleDownload = async () => {
-    if (!selectedDate) {
-      toast.warning("कृपया मिति चयन गर्नुहोस् ।");
-      return;
-    }
-    try {
-      const response = await getDataByDate(selectedDate);
-      setRecords(response.data.data || []);
-      if (response.data.data?.length === 0) {
-        toast.info("कुनै पनि डेटा फेला परेन ।");
+      if (!selectedDate) {
+        toast.warning("कृपया मिति चयन गर्नुहोस् ।");
+        return;
       }
-    } catch (err) {
-      toast.error("डेटा ल्याउन असफल भयो");
-    }
-  };
+      try {
+        const response = await getDataByDate(selectedDate);
+        setRecords(response.data.data || []);
+        if (response.data.data?.length === 0) {
+          toast.info("कुनै पनि डेटा फेला परेन ।");
+        }
+      } catch (err) {     
+        toast.error("डेटा ल्याउन असफल भयो",err);
+      }
+    };
+
+
+
 
   return (
     <div className="container mt-5">
@@ -84,15 +45,7 @@ const ManagePage = () => {
         <div className="col-md-10">
           <div className="card shadow">
             <div className="card-body d-flex justify-content-between align-items-center">
-              <h4 className="mb-0">Admin Dashboard</h4>
-              {username && (
-                <p className="mb-0 text-success">
-                  Welcome, <strong>{username}</strong> 🎉
-                </p>
-              )}
-              <button className="btn btn-danger" onClick={handleLogout}>
-                Logout
-              </button>
+              <h4 className="mb-0">Admin Dashboard</h4>              
             </div>
           </div>
         </div>
@@ -156,7 +109,7 @@ const ManagePage = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ManagePage;
+export default Admin

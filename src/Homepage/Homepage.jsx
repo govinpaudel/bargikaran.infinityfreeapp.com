@@ -1,13 +1,7 @@
-'use client'
-import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
-
-interface Item {
-  title: string;
-  body: string;
-}
-
-const items: Item[] = [
+import React from 'react'
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+const items = [
   {
     title: 'वर्गिकरण भनेको के हो?',
     body:
@@ -30,12 +24,11 @@ const items: Item[] = [
   }
 ];
 
+
 const Homepage = () => {
-  const router = useRouter()
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const toggle = (i: number) => setOpenIndex(openIndex === i ? null : i);
-
+const toggle = (i) => setOpenIndex(openIndex === i ? null : i);
+const navigate = useNavigate()
+const [openIndex, setOpenIndex] = useState(0);
   return (
     <section className="container my-4">
       <h2 className="text-center text-primary mb-4">जग्गाको वर्गिकरण</h2>
@@ -67,7 +60,7 @@ const Homepage = () => {
       <div className="text-center mt-4">
         <button
           className="btn btn-primary btn-lg px-4"
-          onClick={() => router.push('/search')}
+          onClick={() => navigate('/search')}
         >
           वर्गिकरण हेर्न यहाँ थिच्नुहोस्
         </button>
@@ -75,7 +68,7 @@ const Homepage = () => {
       <div className="text-center mt-4">
         <button
           className="btn btn-primary btn-lg px-4"
-          onClick={() => router.push('/admin')}
+          onClick={() =>navigate("/admin")}
         >
           एडमिनका लागि यहाँ थिच्नुहोस्
         </button>

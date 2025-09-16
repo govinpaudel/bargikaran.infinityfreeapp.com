@@ -1,27 +1,49 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react'
-import { getAllOffices, getNapasByOfficeId, getGabisasByNapaId, getWardsByGabisaId, getDetailsByKittaNo } from "../_actions/action"
+import React, { useEffect, useState } from 'react';
+import {
+  getAllOffices,
+  getNapasByOfficeId,
+  getGabisasByNapaId,
+  getWardsByGabisaId,
+  getDetailsByKittaNo
+} from "../Actions/Action";
+import { useNavigate } from 'react-router-dom';
+import LoadingOverlay from '../Loading/LoadingOverlay';
 
-const Page = () => {
-  const router = useRouter();
+const Search = () => {
+  const navigate = useNavigate();
 
-  const [offices, setOffices] = useState<any[]>([]);
-  const [napas, setNapas] = useState<any[]>([]);
-  const [gabisas, setGabisas] = useState<any[]>([]);
-  const [wards, setWards] = useState<any[]>([]);
-  const [office_id, setOffice_id] = useState<number>(0);
-  const [napa_id, setNapa_id] = useState<number>(0);
-  const [gabisa_id, setGabisa_id] = useState<number>(0);
-  const [ward_no, setWard_no] = useState<number>(0);
-  const [kitta_no, setKitta_no] = useState<number>(0);
-  const [details, setDetails] = useState<any[]>([]);
-  const [cnt, setCnt] = useState<number>(0);
+  const [offices, setOffices] = useState([]);
+  const [napas, setNapas] = useState([]);
+  const [gabisas, setGabisas] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [office_id, setOffice_id] = useState(0);
+  const [napa_id, setNapa_id] = useState(0);
+  const [gabisa_id, setGabisa_id] = useState(0);
+  const [ward_no, setWard_no] = useState(0);
+  const [kitta_no, setKitta_no] = useState(0);
+  const [details, setDetails] = useState([]);
+  const [cnt, setCnt] = useState(0);
+  const [loading, setLoading] = useState(false); // Loading state
 
+  // Generic fetch wrapper to handle loading
+  const fetchWithLoading = async (fetchFunc, ...args) => {
+    setLoading(true);
+    try {
+      const res = await fetchFunc(...args);
+      return res;
+    } catch (err) {
+      console.error("API Error:", err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch Effects
   useEffect(() => { fetchOffices(); }, []);
   useEffect(() => { if (office_id > 0) fetchNapas(office_id); }, [office_id]);
-  useEffect(() => { if (office_id > 0 && napa_id > 0) fetchGabisas(office_id, napa_id); }, [napa_id]);
-  useEffect(() => { if (office_id > 0 && napa_id > 0 && gabisa_id > 0) fetchWards(office_id, napa_id, gabisa_id); }, [gabisa_id]);
+  useEffect(() => { if (office_id > 0 && napa_id > 0) fetchGabisas(office_id, napa_id); }, [office_id, napa_id]);
+  useEffect(() => { if (office_id > 0 && napa_id > 0 && gabisa_id > 0) fetchWards(office_id, napa_id, gabisa_id); }, [office_id, napa_id, gabisa_id]);
   useEffect(() => {
     if (office_id > 0 && napa_id > 0 && gabisa_id > 0 && ward_no > 0 && kitta_no > 0) {
       const timer = setTimeout(() => {
@@ -31,54 +53,45 @@ const Page = () => {
     }
   }, [kitta_no, office_id, napa_id, gabisa_id, ward_no]);
 
+  // Fetch Functions
   const fetchOffices = async () => {
-    try {
-      const res = await getAllOffices();
+    const res = await fetchWithLoading(getAllOffices);
+    if (res) {
       setOffices(res.data.data);
       setCnt(res.data.data1);
-    } catch (error) {
-      console.error("Error fetching offices:", error);
     }
-  }
-  const fetchNapas = async (office_id: any) => {
-    try {
-      const res = await getNapasByOfficeId(office_id);
-      setNapas(res.data.data);
-    } catch (error) {
-      console.error("Error fetching napas:", error);
-    }
-  }
-  const fetchGabisas = async (office_id: any, napa_id: any) => {
-    try {
-      const res = await getGabisasByNapaId(office_id, napa_id);
-      setGabisas(res.data.data);
-    } catch (error) {
-      console.error("Error fetching gabisas:", error);
-    }
-  }
-  const fetchWards = async (office_id: any, napa_id: any, gabisa_id: any) => {
-    try {
-      const res = await getWardsByGabisaId(office_id, napa_id, gabisa_id);
-      setWards(res.data.data);
-    } catch (error) {
-      console.error("Error fetching wards:", error);
-    }
-  }
-  const fetchDetails = async (office_id: any, napa_id: any, gabisa_id: any, ward_no: any, kitta_no: any) => {
-    try {
-      const res = await getDetailsByKittaNo(office_id, napa_id, gabisa_id, ward_no, kitta_no);
+  };
+
+  const fetchNapas = async (office_id) => {
+    const res = await fetchWithLoading(getNapasByOfficeId, office_id);
+    if (res) setNapas(res.data.data);
+  };
+
+  const fetchGabisas = async (office_id, napa_id) => {
+    const res = await fetchWithLoading(getGabisasByNapaId, office_id, napa_id);
+    if (res) setGabisas(res.data.data);
+  };
+
+  const fetchWards = async (office_id, napa_id, gabisa_id) => {
+    const res = await fetchWithLoading(getWardsByGabisaId, office_id, napa_id, gabisa_id);
+    if (res) setWards(res.data.data);
+  };
+
+  const fetchDetails = async (office_id, napa_id, gabisa_id, ward_no, kitta_no) => {
+    const res = await fetchWithLoading(getDetailsByKittaNo, office_id, napa_id, gabisa_id, ward_no, kitta_no);
+    if (res) {
       setDetails(res.data.data);
       setCnt(res.data.data1);
-    } catch (error) {
-      console.error("Error fetching details:", error);
     }
-  }
+  };
 
   return (
     <section className="container my-4">
+      <LoadingOverlay loading={loading} message="Fetching data, please wait..." />
+
       <h4 className="text-success text-center mb-3">पालिकाले गरेको वर्गिकरण हेर्नुहोस्</h4>
       <div className="text-start mb-3">
-        <button className="btn btn-secondary" onClick={() => router.push("/")}>
+        <button className="btn btn-secondary" onClick={() => navigate("/")}>
           ← गृह पृष्ठमा जानुहोस्
         </button>
       </div>
@@ -179,12 +192,11 @@ const Page = () => {
         </table>
       </div>
 
-      {/* Counter */}
       <h6 className="text-primary text-center">
         यहाँ {cnt} पटक वर्गिकरण खोजि गरिएको छ ।
       </h6>
     </section>
-  )
-}
+  );
+};
 
-export default Page
+export default Search;
