@@ -1,7 +1,4 @@
-
-import React from "react";
-
-const LoadingOverlay = ({ loading, message = "Loading..." }) => {
+const LoadingOverlay = ({ loading, message = "कृपया प्रतिक्षा गर्नुहोस्..." }) => {
   if (!loading) return null; // Don't render anything if not loading
 
   return (
@@ -21,7 +18,7 @@ const LoadingOverlay = ({ loading, message = "Loading..." }) => {
       }}
     >
       <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
-        <span className="visually-hidden">Loading...</span>
+        <span className="visually-hidden">कृपया प्रतिक्षा गर्नुहोस्...</span>
       </div>
       <p className="mt-3 fw-bold">{message}</p>
     </div>

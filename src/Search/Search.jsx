@@ -87,7 +87,7 @@ const Search = () => {
 
   return (
     <section className="container my-4">
-      <LoadingOverlay loading={loading} message="Fetching data, please wait..." />
+      <LoadingOverlay loading={loading} message="कृपया प्रतिक्षा गर्नुहोस्..." />
 
       <h4 className="text-success text-center mb-3">पालिकाले गरेको वर्गिकरण हेर्नुहोस्</h4>
       <div className="text-start mb-3">

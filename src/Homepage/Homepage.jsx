@@ -28,7 +28,7 @@ const items = [
 const Homepage = () => {
 const toggle = (i) => setOpenIndex(openIndex === i ? null : i);
 const navigate = useNavigate()
-const [openIndex, setOpenIndex] = useState(0);
+const [openIndex, setOpenIndex] = useState(null);
   return (
     <section className="container my-4">
       <h2 className="text-center text-primary mb-4">जग्गाको वर्गिकरण</h2>
