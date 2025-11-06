@@ -28,9 +28,9 @@ export const getDetailsByKittaNo = async (office_id,napa_id,gabisa_id,ward_no,ki
   console.log(`${API_URL}/getDetailsByKittaNo/${office_id}/${napa_id}/${gabisa_id}/${ward_no}/${kitta_no}`)
   return res;
 };
-export const getDataByDate = async (date) => {
-  const res = await axios.get(`http://10.7.33.8:5000/api/bargikaran/getDataByDate/${date}`);
-  console.log(`http://10.7.33.8:5000/api/bargikaran/getDataByDate/${date}`);
+export const getDataByDate = async (date,ipaddress) => {
+  const res = await axios.get(`http://${ipaddress}:5000/api/bargikaran/getDataByDate/${date}`);
+  console.log(`http://${ipaddress}:5000/api/bargikaran/getDataByDate/${date}`);
   return res;
 };
 
