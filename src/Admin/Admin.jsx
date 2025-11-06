@@ -120,6 +120,7 @@ const Admin = () => {
           <table className="table table-bordered table-striped">
             <thead className="table-dark">
               <tr>
+                <th>SN</th>
                 <th>Office</th>
                 <th>Napa</th>
                 <th>Gabisa</th>
@@ -133,6 +134,7 @@ const Admin = () => {
               {records.length > 0 ? (
                 records.map((row, index) => (
                   <tr key={index}>
+                    <td>{index+1}</td>
                     <td>{row.office_name}</td>
                     <td>{row.napa_name}</td>
                     <td>{row.gabisa_name}</td>
