@@ -91,8 +91,8 @@ const Search = () => {
 
       <h4 className="text-success text-center mb-3">पालिकाले गरेको वर्गिकरण हेर्नुहोस्</h4>
       <div className="text-start mb-3">
-        <button className="btn btn-secondary" onClick={() => navigate("/")}>
-          ← गृह पृष्ठमा जानुहोस्
+        <button className="btn btn-secondary" onClick={() => navigate("/logout")}>
+          ← बाहिर जानुहोस्
         </button>
       </div>
 

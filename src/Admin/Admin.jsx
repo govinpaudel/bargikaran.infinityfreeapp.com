@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { getDataByDate, sendRecordsToServer } from '../Actions/Action';
+import { saveRecords } from '../Actions/Action';
 import { toast } from "react-toastify";
 import { useState } from 'react';
 import LoadingOverlay from '../Loading/LoadingOverlay';
@@ -18,7 +18,7 @@ const Admin = () => {
     }
     try {
       setLoading(true);
-      const response = await sendRecordsToServer(records);
+      const response = await saveRecords(records);
       if (response.data.status === true) {
         toast.success(response.data.message);
         // failed_records check
