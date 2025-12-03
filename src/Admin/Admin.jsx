@@ -9,6 +9,7 @@ const Admin = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [ipaddress,setipaddress]=useState('100.97.198.62')
   const [failedRecords, setFailedRecords] = useState([]); // new state
 
   const handleUpload = async () => {
@@ -47,7 +48,12 @@ const Admin = () => {
       setLoading(true);
       setRecords([]); // clear existing data
       setFailedRecords([]); // clear failed list
-      const response = await getDataByDate(selectedDate);
+      if(!selectedDate || !ipaddress){
+        toast.warning('कृपया मिति र Ip address प्रविष्ठ गर्नुहोला ।');
+        return;
+      }
+      
+      const response = await getDataByDate(selectedDate,ipaddress);
       setRecords(response.data.data || []);
       if (response.data.data?.length === 0) {
         toast.info("कुनै पनि डेटा फेला परेन ।");
@@ -68,6 +74,12 @@ const Admin = () => {
         <div className="col-md-10">
           <div className="card shadow">
             <div className="card-body d-flex justify-content-between align-items-center">
+            <button
+          className="btn btn-primary btn-lg px-4"
+          onClick={() =>navigate("/")}
+        >
+          पछाडि जानुहोस्
+        </button>
               <h4 className="mb-0">Admin Dashboard</h4>
             </div>
           </div>
@@ -76,6 +88,15 @@ const Admin = () => {
 
       {/* Date Picker + Button */}
       <div className="row mt-4">
+      <div className="col-md-6 d-flex">
+      <input
+            type="text"
+            className="form-control me-2"
+            value={ipaddress}
+            onChange={(e) => setipaddress(e.target.value)}
+            placeholder='ip address of server'
+          />
+      </div>
         <div className="col-md-6 d-flex">
           <input
             type="date"
@@ -99,6 +120,7 @@ const Admin = () => {
           <table className="table table-bordered table-striped">
             <thead className="table-dark">
               <tr>
+                <th>SN</th>
                 <th>Office</th>
                 <th>Napa</th>
                 <th>Gabisa</th>
@@ -112,6 +134,7 @@ const Admin = () => {
               {records.length > 0 ? (
                 records.map((row, index) => (
                   <tr key={index}>
+                    <td>{index+1}</td>
                     <td>{row.office_name}</td>
                     <td>{row.napa_name}</td>
                     <td>{row.gabisa_name}</td>
