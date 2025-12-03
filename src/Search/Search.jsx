@@ -11,7 +11,6 @@ import LoadingOverlay from '../Loading/LoadingOverlay';
 
 const Search = () => {
   const navigate = useNavigate();
-
   const [offices, setOffices] = useState([]);
   const [napas, setNapas] = useState([]);
   const [gabisas, setGabisas] = useState([]);
@@ -88,12 +87,18 @@ const Search = () => {
   return (
     <section className="container my-4">
       <LoadingOverlay loading={loading} message="कृपया प्रतिक्षा गर्नुहोस्..." />
-
       <h4 className="text-success text-center mb-3">पालिकाले गरेको वर्गिकरण हेर्नुहोस्</h4>
-      <div className="text-start mb-3">
-        <button className="btn btn-secondary" onClick={() => navigate("/logout")}>
-          ← बाहिर जानुहोस्
-        </button>
+      <div className="row">
+        <div className="col-md-6 text-center">
+          <button className="btn btn-secondary" onClick={() => navigate("/logout")}>
+            ← बाहिर जानुहोस्
+          </button>
+        </div>
+        <div className="col-md-6 text-center">
+          <button className="btn btn-secondary" onClick={() => navigate("/admin")}>
+            ← एडमिन लगईन
+          </button>
+        </div>
       </div>
 
       {/* Form Fields */}
