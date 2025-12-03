@@ -45,12 +45,20 @@ const Search = () => {
     }
   };
   const handleEdit = (id) => {
-    console.log(id);
-  }
+  let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
+  const index = kittas.findIndex(o => o.id === id);
+  if (index === -1) return;
+  kittas[index].office_id = office_id;
+  kittas[index].office_name = office_name;
+  localStorage.setItem("kittas", JSON.stringify(kittas));
+  setDetails(kittas);
+}
+  
   const handleDelete = (id) => {
   let offices = JSON.parse(localStorage.getItem("kittas")) || [];
   kittas = kittas.filter(o => o.id !== id);
   localStorage.setItem("kittas", JSON.stringify(kittas));
+  setDetails(kittas);
 }  
   const saveinlocal = () => {
     let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
