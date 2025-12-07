@@ -336,20 +336,19 @@ function loginHandler() {
         $stmt = $pdo->prepare("SELECT id,nepali_name, mobileno, email, password, role, expire_at, device_token, login_cnt FROM brg_users WHERE mobileno = ?");
         $stmt->execute([$mobileno]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (!$user || !password_verify($password, $user['password'])) {
             echo json_encode(["success" => false, "message" => "प्रयोगकर्ता वा पासवर्ड मिलेन"]);
             return;
         }
-
         // Check if account is expired
         $now = new DateTime();
         $expireAt = new DateTime($user['expire_at']);
         if ($expireAt < $now) {
-            echo json_encode(["success" => false, "message" => "प्रयोगकर्ताको मिति सकिएको छ।"]);
+            echo json_encode(["success" => false, "message" => "प्रयोगकर्ताको नविकरण भएको छैन। कृपया 9846805409 मा सम्पर्क राख्नुहोला ।"]);
             return;
         }
-
+        
+        if($user['role'] != 1){
         // Device token check
         if ($user['login_cnt'] == 0) {
             // First login → save device_token and increment login_cnt
@@ -359,11 +358,12 @@ function loginHandler() {
             }
         } else {
             // Subsequent logins → must match device_token
-            if (!$device_token || $user['device_token'] !== $device_token) {
+           if (!$device_token || $user['device_token'] !== $device_token) {
                 echo json_encode(["success" => false, "message" => "यो प्रयोगकर्ता पहिले नै अर्को यन्त्रबाट प्रयोग गरिएको छ।"]);
                 return;
-            }
+            }          
         }
+    }
 
         // Login success
         echo json_encode([
