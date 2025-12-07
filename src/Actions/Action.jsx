@@ -41,3 +41,29 @@ export const saveRecords = async (data) => {
   console.log(`${API_URL}/saverecords`, data);
   return res;
 }
+
+export const downloadRecords = async (data) => {
+  const res = await axios.post(`${API_URL}/downloadrecords`, data);
+  console.log(`${API_URL}/downloadrecords`, data);
+  return res;
+}
+
+export const updateRecords = async (data) => {
+  const res = await axios.post(`http://${data.ip}/api/sync/bargikaran.php`, data);
+  console.log(`http://${data.ip}/api/sync/bargikaran.php`, data);
+  return res;
+}
+
+export const changePassword = async (data) => {
+  const res = await axios.post(`${API_URL}/changepassword`, data);
+  console.log(`${API_URL}/changepassword`, data);
+  return res;
+}
+
+export const updateUser = async (data) => {
+  const res = await axios.post(`${API_URL}/updateuser`, data);
+  console.log(`${API_URL}/updateuser`, data);
+  return res;
+}
+
+

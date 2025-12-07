@@ -12,6 +12,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
@@ -42,7 +43,7 @@ export default function Signup() {
     }
 
     try {
-      const data = { mobile, email, password,device_token };
+      const data = { mobile, email,name , password,device_token };
       const res = await handleSignup(data);
       if (res.data.success) {
         setSuccess("साइनअप सफल भयो!");
@@ -90,6 +91,18 @@ export default function Signup() {
               value={email}
               placeholder="example@gmail.com"
               onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+            {/* Nepali Name */}
+          <div className="mb-3">
+            <label className="form-label">नाम नेपालीमा</label>
+            <input
+              type="text"
+              className="form-control"
+              value={name}
+              placeholder="नाम बहादुर थर"
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>

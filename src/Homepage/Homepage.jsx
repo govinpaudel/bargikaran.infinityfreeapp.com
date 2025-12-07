@@ -23,8 +23,6 @@ const items = [
       '• कर निर्धारण फरक-फरक हुन्छ।\n• योजना र पूर्वाधार (सडक, पानी, बत्ती) व्यवस्थापन सजिलो हुन्छ।\n• प्रयोग परिवर्तन (जस्तै कृषि → आवासीय)का लागि अनुमति र कार्यविधि आवश्यक पर्छ।\n• वातावरणीय जोखिम (पहिरो, बाढी) व्यवस्थापनमा सहयोगी हुन्छ।',
   }
 ];
-
-
 const Homepage = () => {
 const toggle = (i) => setOpenIndex(openIndex === i ? null : i);
 const navigate = useNavigate()
@@ -65,14 +63,7 @@ const [openIndex, setOpenIndex] = useState(null);
           वर्गिकरण हेर्न यहाँ थिच्नुहोस्
         </button>
       </div>
-      <div className="text-center mt-4">
-        <button
-          className="btn btn-primary btn-lg px-4"
-          onClick={() =>navigate("/admin")}
-        >
-          एडमिनका लागि यहाँ थिच्नुहोस्
-        </button>
-      </div>
+      
     </section>
   )
 }

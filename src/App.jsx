@@ -7,16 +7,19 @@ import Admin from './Admin/Admin';
 import Login from './Login/Login';
 import Signup from './Signup/Signup';
 import Logout from './Logout/Logout';
+import Homepage from './Homepage/Homepage';
+import SuperAdmin from './SuperAdmin/SuperAdmin';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Homepage />} />
+        <Route path="/homepage" element={<Homepage />} />
         <Route path="/login" element={<Login />} />  
         <Route path="/signup" element={<Signup />} />
-          <Route path="/logout" element={<Logout />} />
-          <Route path="/searchbargikaran" element={<Search />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/searchbargikaran" element={<Search />} />
         <Route
           path="/search"
           element={
@@ -32,7 +35,15 @@ function App() {
               <Admin />
             </ProtectedRoute>
           }
-        />       
+        />
+        <Route
+          path="/superadmin"
+          element={
+            <ProtectedRoute>
+              <SuperAdmin />
+            </ProtectedRoute>
+          }
+        />         
       </Routes>
     </Router>
   )

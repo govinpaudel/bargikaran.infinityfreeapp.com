@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react";
-
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -7,7 +6,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {   
+  useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
       setUser(user);
@@ -15,14 +14,14 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = ( userData) => {    
+  const login = (userData) => {
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("user");    
-    setUser(null);          
+    localStorage.removeItem("user");
+    setUser(null);
   };
 
   return (

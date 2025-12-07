@@ -1,16 +1,16 @@
-import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../Context/AuthContext";
+
 const Logout = () => {
-    const navigate=useNavigate()
+  const navigate=useNavigate();
+  const { logout } = useAuth();
+  
     useEffect(() => {
-      localStorage.removeItem("user"); 
-       navigate("/login");
+      logout();
+       navigate("/");
     }, [])    
-  return (
-    <div>
-      Logout
-    </div>
-  )
+ return null;
 }
 
-export default Logout
+export default Logout;

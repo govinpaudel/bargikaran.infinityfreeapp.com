@@ -8,6 +8,7 @@ import {
 } from "../Actions/Action";
 import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from '../Loading/LoadingOverlay';
+import Navbar from '../Navbar/Navbar';
 
 const Search = () => {
   const navigate = useNavigate();
@@ -36,9 +37,7 @@ const Search = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Fetch Effects
+  };  
   useEffect(() => { fetchOffices(); }, []);
   useEffect(() => { if (office_id > 0) fetchNapas(office_id); }, [office_id]);
   useEffect(() => { if (office_id > 0 && napa_id > 0) fetchGabisas(office_id, napa_id); }, [office_id, napa_id]);
@@ -86,21 +85,8 @@ const Search = () => {
 
   return (
     <section className="container my-4">
+      <Navbar />
       <LoadingOverlay loading={loading} message="कृपया प्रतिक्षा गर्नुहोस्..." />
-      <h4 className="text-success text-center mb-3">पालिकाले गरेको वर्गिकरण हेर्नुहोस्</h4>
-      <div className="row">
-        <div className="col-md-6 text-center">
-          <button className="btn btn-secondary" onClick={() => navigate("/logout")}>
-            ← बाहिर जानुहोस्
-          </button>
-        </div>
-        <div className="col-md-6 text-center">
-          <button className="btn btn-secondary" onClick={() => navigate("/admin")}>
-            ← एडमिन लगईन
-          </button>
-        </div>
-      </div>
-
       {/* Form Fields */}
       <div className="row g-3 mb-4">
         <div className="col-12 col-md">

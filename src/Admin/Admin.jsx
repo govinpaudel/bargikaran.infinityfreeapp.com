@@ -1,164 +1,193 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { faDeleteLeft } from "@fortawesome/free-solid-svg-icons";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState } from 'react';
 import {
   getAllOffices,
   getNapasByOfficeId,
   getGabisasByNapaId,
-  getWardsByGabisaId
+  getWardsByGabisaId,
+  saveRecords
 } from "../Actions/Action";
 import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from '../Loading/LoadingOverlay';
 import "./Admin.css";
-
-const Search = () => {
+import Navbar from "../Navbar/Navbar";
+import { toast } from "react-toastify";
+const Admin = () => {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState([])
   const [offices, setOffices] = useState([]);
   const [napas, setNapas] = useState([]);
   const [gabisas, setGabisas] = useState([]);
   const [wards, setWards] = useState([]);
-  const [office_id, setOffice_id] = useState(0);
-  const [office_name, setOffice_name] = useState("");
-  const [napa_id, setNapa_id] = useState(0);
-  const [napa_name, setNapa_name] = useState("");
-  const [gabisa_id, setGabisa_id] = useState(0);
-  const [gabisa_name, seGapa_name] = useState("");
-  const [ward_no, setWard_no] = useState(0);
-  const [kitta_no, setKitta_no] = useState(0);
-  const [bargikaran, setBargikaran] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [details, setDetails] = useState([]);
-  const [loading, setLoading] = useState(false); // Loading state
+  const defaultData = {
+    id: 0,
+    office_id: 0,
+    office_name: "",
+    napa_id: 0,
+    napa_name: "",
+    gabisa_id: 0,
+    gabisa_name: "",
+    ward_no: 0,
+    kitta_no: 0,
+    bargikaran: "",
+    remarks: "",
+    user: 0
+  }
+  const [data, setData] = useState(defaultData);
+  const [localDetails, setLocalDetails] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Generic fetch wrapper to handle loading
-  const fetchWithLoading = async (fetchFunc, ...args) => {
-    setLoading(true);
+  const fetchOffices = async () => {
     try {
-      const res = await fetchFunc(...args);
-      return res;
+      const res = await getAllOffices();
+      setOffices(res.data.data);
     } catch (err) {
-      console.error("API Error:", err);
-      return null;
-    } finally {
-      setLoading(false);
+      console.error(err);
     }
   };
-  const handleEdit = (id) => {
-  let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
-  const index = kittas.findIndex(o => o.id === id);
-  if (index === -1) return;
-  kittas[index].office_id = office_id;
-  kittas[index].office_name = office_name;
-  localStorage.setItem("kittas", JSON.stringify(kittas));
-  setDetails(kittas);
-}
-  
-  const handleDelete = (id) => {
-  let offices = JSON.parse(localStorage.getItem("kittas")) || [];
-  kittas = kittas.filter(o => o.id !== id);
-  localStorage.setItem("kittas", JSON.stringify(kittas));
-  setDetails(kittas);
-}  
-  const saveinlocal = () => {
+
+  const fetchNapas = async () => {
+    try {
+      const res = await getNapasByOfficeId(data.office_id);
+      setNapas(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchGabisas = async () => {
+    try {
+      const res = await getGabisasByNapaId(data.office_id, data.napa_id);
+      setGabisas(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchWards = async () => {
+    try {
+      const res = await getWardsByGabisaId(data.office_id, data.napa_id, data.gabisa_id);
+      setWards(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const sendtoserver = async (id) => {
+    try {
+      let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
+      kittas = kittas.filter(o => o.id == id);
+      const res = await saveRecords(kittas);
+      if(res.data.status==true){
+        toast.success(res.data.message);
+        handleDelete(id);
+      }     
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  // Fetch Effects
+  useEffect(() => {
+    let user = JSON.parse(localStorage.getItem("user")) || [];
+    setUserData(user);
+    if (user.role != 2) {
+      navigate("/search");
+    } else {
+      fetchOffices()
+      setLocalDetails(JSON.parse(localStorage.getItem("kittas")) || []);
+    }
+
+  }, []);
+
+  useEffect(() => { if (data.office_id > 0) fetchNapas() }, [data.office_id]);
+  useEffect(() => { if (data.office_id > 0 && data.napa_id > 0) fetchGabisas(); }, [data.office_id, data.napa_id]);
+  useEffect(() => { if (data.office_id > 0 && data.napa_id > 0 && data.gabisa_id > 0) fetchWards(); }, [data.office_id, data.napa_id, data.gabisa_id]);
+
+  const handleSave = () => {
     let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
-
-    // Auto increment ID
-    const newId = kittas.length > 0
-      ? kittas[kittas.length - 1].id + 1
-      : 1;
-
-    const newkittas = {
-      id: newId,
-      office_id: office_id,
-      office_name: office_name,
-      napa_id: napa_id,
-      napa_name: napa_name,
-      gabisa_id: gabisa_id,
-      gabisa_name: gabisa_name,
-      ward_no: ward_no,
-      kitta_no: kitta_no,
-      bargikaran: bargikaran,
-      remarks: remarks
-    };
-
-    kittas.push(newkittas);
+    if (data.id > 0) {
+      const index = kittas.findIndex(o => o.id === data.id);
+      if (index !== -1) {
+        kittas[index] = { ...data };   // <-- update record
+      }
+      localStorage.setItem("kittas", JSON.stringify(kittas));
+      setLocalDetails(kittas);
+      console.log(kittas);
+    }
+    else {
+      const newId = kittas.length > 0
+        ? kittas[kittas.length - 1].id + 1
+        : 1;
+      data.id = newId;
+      data.user = userData.id
+      kittas.push({ ...data });
+      localStorage.setItem("kittas", JSON.stringify(kittas));
+      setLocalDetails(kittas);
+    }
+    setData(defaultData);
+  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setData(prev => ({ ...prev, [name]: value }));
+    if (name == "office_id") {
+      const text = e.target.options[e.target.selectedIndex].text;
+      setData(prev => ({ ...prev, office_name: text }));
+    }
+    if (name == "napa_id") {
+      const text = e.target.options[e.target.selectedIndex].text;
+      setData(prev => ({ ...prev, napa_name: text }));
+    }
+    if (name == "gabisa_id") {
+      const text = e.target.options[e.target.selectedIndex].text;
+      setData(prev => ({ ...prev, gabisa_name: text }));
+    }
+  }
+  const handleDelete = (id) => {
+    let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
+    kittas = kittas.filter(o => o.id !== id);
     localStorage.setItem("kittas", JSON.stringify(kittas));
-    console.log(kittas)
-    setDetails(kittas);
+    setLocalDetails(kittas);
+  }
+  const handleEdit = (id) => {
+    let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
+    const index = kittas.findIndex(o => o.id === id);
+    if (index === -1) return;
+    setData({ ...kittas[index] });
   }
 
-  // Fetch Effects
-  useEffect(
-    () => {
-      setDetails(JSON.parse(localStorage.getItem("kittas")) || []);
-    }
-    , []
-  )
-  useEffect(() => { fetchOffices(); }, []);
-  useEffect(() => { if (office_id > 0) fetchNapas(office_id); }, [office_id]);
-  useEffect(() => { if (office_id > 0 && napa_id > 0) fetchGabisas(office_id, napa_id); }, [office_id, napa_id]);
-  useEffect(() => { if (office_id > 0 && napa_id > 0 && gabisa_id > 0) fetchWards(office_id, napa_id, gabisa_id); }, [office_id, napa_id, gabisa_id]);
 
-  // Fetch Functions
-  const fetchOffices = async () => {
-    const res = await fetchWithLoading(getAllOffices);
-    if (res) {
-      setOffices(res.data.data);
-    }
-  };
-
-  const fetchNapas = async (office_id) => {
-    const res = await fetchWithLoading(getNapasByOfficeId, office_id);
-    if (res) setNapas(res.data.data);
-  };
-
-  const fetchGabisas = async (office_id, napa_id) => {
-    const res = await fetchWithLoading(getGabisasByNapaId, office_id, napa_id);
-    if (res) setGabisas(res.data.data);
-  };
-
-  const fetchWards = async (office_id, napa_id, gabisa_id) => {
-    const res = await fetchWithLoading(getWardsByGabisaId, office_id, napa_id, gabisa_id);
-    if (res) setWards(res.data.data);
-  };
 
   return (
     <section className="container my-4">
+      <Navbar />
       <LoadingOverlay loading={loading} message="कृपया प्रतिक्षा गर्नुहोस्..." />
-      <h4 className="text-success text-center mb-3">पालिकाले गरेको वर्गिकरण हेर्नुहोस्</h4>
-      <div className="row">
-        <div className="col-md-6 text-start">
-          <button className="btn btn-secondary" onClick={() => navigate("/search")}>
-            ← खोजिमा जानुहोस्
-          </button>
-        </div>
-      </div>
+      <h4 className="text-success text-center mb-3">वर्गिकरण थप गर्नुहोस् । </h4>
 
       {/* Form Fields */}
       <div className="row g-3 mb-4">
         <div className="col-12 col-md">
           <select
+            name="office_id"
             className="form-select"
-            value={office_id}
-            onChange={(e) => {
-              setOffice_id(Number(e.target.value));
-              setOffice_name(e.target.options[e.target.selectedIndex].text)
-            }}
-          >
+            value={data.office_id}
+            onChange={handleChange}          >
             <option value="0" disabled>--कार्यालय छान्नुहोस्--</option>
             {offices.map((o) => (
               <option key={o.office_id} value={o.office_id}>{o.office_name}</option>
             ))}
           </select>
         </div>
-
         <div className="col-12 col-md">
           <select
+            name="napa_id"
             className="form-select"
-            value={napa_id}
+            value={data.napa_id}
             disabled={!offices.length}
-            onChange={e => setNapa_id(Number(e.target.value))}
+            onChange={handleChange}
           >
             <option value="0" disabled>--पालिका छान्नुहोस्--</option>
             {napas.map((n) => (
@@ -169,24 +198,24 @@ const Search = () => {
 
         <div className="col-12 col-md">
           <select
+            name="gabisa_id"
             className="form-select"
-            value={gabisa_id}
+            value={data.gabisa_id}
             disabled={!napas.length}
-            onChange={e => setGabisa_id(Number(e.target.value))}
-          >
+            onChange={handleChange}          >
             <option value="0" disabled>--गा.वि.स छान्नुहोस्--</option>
             {gabisas.map((g) => (
               <option key={g.gabisa_id} value={g.gabisa_id}>{g.gabisa_name}</option>
             ))}
           </select>
         </div>
-
         <div className="col-12 col-md">
           <select
+            name="ward_no"
             className="form-select"
-            value={ward_no}
+            value={data.ward_no}
             disabled={!gabisas.length}
-            onChange={e => setWard_no(Number(e.target.value))}
+            onChange={handleChange}
           >
             <option value="0" disabled>--वडा नं छान्नुहोस्--</option>
             {wards.map((w) => (
@@ -198,36 +227,39 @@ const Search = () => {
       <div className="row g-3 mb-4">
         <div className="col-12 col-md">
           <input
+            name="kitta_no"
             type="text"
             className="form-control"
             placeholder="कित्ता नं"
-            value={kitta_no}
-            disabled={!ward_no}
-            onChange={e => setKitta_no(Number(e.target.value))}
+            value={data.kitta_no}
+            disabled={data.ward_no <= 0}
+            onChange={handleChange}
           />
         </div>
         <div className="col-12 col-md">
           <input
+            name="bargikaran"
             type="text"
             className="form-control"
             placeholder="वर्गिकरण"
-            value={bargikaran}
-            disabled={!kitta_no}
-            onChange={e => setBargikaran(e.target.value)}
+            value={data.bargikaran}
+            disabled={data.kitta_no <= 0}
+            onChange={handleChange}
           />
         </div>
         <div className="col-12 col-md">
           <input
+            name="remarks"
             type="text"
             className="form-control"
             placeholder="कैफियत"
-            value={remarks}
-            disabled={!bargikaran}
-            onChange={e => setRemarks(e.target.value)}
+            value={data.remarks}
+            disabled={!data.bargikaran.length > 0}
+            onChange={handleChange}
           />
         </div>
         <div className="col-12 col-md">
-          <button onClick={saveinlocal} className='btn btn-sm btn-primary'>सेभ गर्नुहोस्</button>
+          <button onClick={handleSave} className='btn btn-primary'>{data.id == 0 ? 'नयाँ दर्ता गर्नुहोस्' : 'संशोधन सेभ गर्नुहोस्'}</button>
         </div>
       </div>
 
@@ -244,11 +276,11 @@ const Search = () => {
               <th>कित्ता नं</th>
               <th>वर्गिकरण</th>
               <th>कैफियत</th>
-              <th colSpan={2}>कृयाकलाप</th>
+              <th colSpan={3}>कृयाकलाप</th>
             </tr>
           </thead>
           <tbody>
-            {details.map((i, index) => (
+            {localDetails.map((i, index) => (
               <tr key={index}>
                 <td>{i.id}</td>
                 <td>{i.office_name}</td>
@@ -261,18 +293,26 @@ const Search = () => {
                 <td>
                   <button
                     onClick={() => handleEdit(i.id)}
-                    className="btn-edit"
+                    className="btn btn-info"
                   >
                     <FontAwesomeIcon icon={faEdit} />
                   </button>
-                  </td><td>
+                </td><td>
                   <button
                     onClick={() => handleDelete(i.id)}
-                    className="btn-edit"
+                    className="btn btn-danger"
+                    title="Delete"
                   >
                     <FontAwesomeIcon icon={faDeleteLeft} />
                   </button>
-
+                </td><td>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => sendtoserver(i.id)}
+                    title="Send to Server"
+                  >
+                    <FontAwesomeIcon icon={faUpload} /> Send
+                  </button>
 
                 </td>
               </tr>
@@ -284,4 +324,4 @@ const Search = () => {
   );
 };
 
-export default Search;
+export default Admin;
