@@ -78,6 +78,7 @@ const Admin = () => {
 
   const sendtoserver = async (id) => {
     try {
+      setLoading(true);
       let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
       kittas = kittas.filter(o => o.id == id);
       const res = await saveRecords(kittas);
@@ -89,6 +90,7 @@ const Admin = () => {
     } catch (err) {
       console.error(err);
     }
+    setLoading(false);
   }
   // Fetch Effects
   useEffect(() => {

@@ -462,7 +462,7 @@ function getDetailsByKittaNoHandler($office_id, $napa_id, $gabisa_id, $ward_no, 
     if (!$office_id || !$napa_id || !$gabisa_id || !$ward_no || !$kitta_no) return invalidInput("All required parameters");
 
     try {
-        $stmt = $pdo->prepare("SELECT * FROM brg_details WHERE office_id = ? AND napa_id=? AND gabisa_id=? AND ward_no=? AND kitta_no=? ORDER BY created_at, updated_at DESC");
+        $stmt = $pdo->prepare("SELECT * FROM brg_details WHERE office_id = ? AND napa_id=? AND gabisa_id=? AND ward_no=? AND kitta_no=? ORDER BY updated_at DESC");
         $stmt->execute([$office_id, $napa_id, $gabisa_id, $ward_no, $kitta_no]);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
