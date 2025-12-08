@@ -16,39 +16,49 @@ export default function Navbar() {
 
   return (
     <>
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div className="container-fluid">
-        <span className="navbar-brand">वर्गिकरण व्यवस्थापन प्रणाली</span>
-        <span>( {userData.nepali_name} )</span>
-        <div className="d-flex ms-auto">
-           <button
-            className="btn btn-light me-2"
-            onClick={() => navigate("/search")}
-          >
-            खोजि गर्नुहोस्
-          </button> 
-        { userData.role==2?<button
-            className="btn btn-light me-2"
-            onClick={() => navigate("/admin")}
-          >
+   <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div className="container-fluid">
+    <span className="navbar-brand">वर्गिकरण व्यवस्थापन प्रणाली</span>
+    <span className="ms-2">( {userData.nepali_name} )</span>
+
+    <button
+      className="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#mainNavbar"
+      aria-controls="mainNavbar"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span className="navbar-toggler-icon"></span>
+    </button>
+
+    <div className="collapse navbar-collapse" id="mainNavbar">
+      <div className="d-flex ms-auto">
+        <button className="btn btn-light me-2" onClick={() => navigate("/search")}>
+          खोजि गर्नुहोस्
+        </button>
+
+        {userData.role === 2 && (
+          <button className="btn btn-light me-2" onClick={() => navigate("/admin")}>
             एडमिन
-          </button>:null }
-          
-
-          { userData.role==1?<button
-            className="btn btn-light me-2"
-            onClick={() => navigate("/superadmin")}
-          >
-            सुपर एडमिन
-          </button>:null}
-
-          <button className="btn btn-danger" onClick={handleLogout}>
-            लगआउट
           </button>
-        </div>
+        )}
+
+        {userData.role === 1 && (
+          <button className="btn btn-light me-2" onClick={() => navigate("/superadmin")}>
+            सुपर एडमिन
+          </button>
+        )}
+
+        <button className="btn btn-danger" onClick={handleLogout}>
+          लगआउट
+        </button>
       </div>
-    </nav>
-    <hr/>
+    </div>
+  </div>
+</nav>
+<hr />
    </>
 
   );
