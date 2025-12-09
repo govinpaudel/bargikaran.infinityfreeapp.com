@@ -20,7 +20,7 @@ export default function Login() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
+    const user = sessionStorage.getItem("user");
   if (user) {
     navigate("/search");
   }

@@ -15,16 +15,16 @@ const SuperAdmin = () => {
   const [show, setShow] = useState(false);
   const [sdata, setSdata] = useState([]);
   const [userData, setUserData] = useState([]);
-  const [loading,setLoading]=useState(false);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    let user = JSON.parse(localStorage.getItem("user")) || [];
+    let user = JSON.parse(sessionStorage.getItem("user")) || [];
     setUserData(user);
     if (user.role != 1) {
       navigate("/search")
     }
   }, [])
   const showData = async () => {
-    
+
     if (!ddate) {
       toast.warning('कृपया मिति छान्नुहोस्');
       return;
@@ -92,7 +92,7 @@ const SuperAdmin = () => {
   return (
     <section className="container my-4">
       <Navbar />
-<LoadingOverlay loading={loading} message="कृपया प्रतिक्षा गर्नुहोस्..." />
+      <LoadingOverlay loading={loading} message="कृपया प्रतिक्षा गर्नुहोस्..." />
       <div className="container">
         <div className='row'>
           <div className="col">
@@ -149,9 +149,40 @@ const SuperAdmin = () => {
 
             </tbody>
           </table>
+          <table className='table table-sm table-stripped'>
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>कार्यालय</th>
+                <th>पालिका</th>
+                <th>गा.वि.स</th>
+                <th>वडा</th>
+                <th>कित्ता नं</th>
+                <th>वर्गिकरण</th>
+                <th>कैफियत</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                data.details ?
+                  data.details.map((item, i) => {
+                    return (<tr key={i}>
+                      <td>{item.id}</td>
+                      <td>{item.office_name}</td>
+                      <td>{item.napa_name}</td>
+                      <td>{item.gabisa_name}</td>
+                      <td>{item.ward_no}</td>
+                      <td>{item.kitta_no}</td>
+                      <td>{item.bargikaran}</td>
+                      <td>{item.remarks}</td>
+                    </tr>)
+                  }) : null
+              }
+
+            </tbody>
+          </table>
         </div>
       </div>
-
 
       {show && (
         <div

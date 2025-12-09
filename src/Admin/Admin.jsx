@@ -94,7 +94,7 @@ const Admin = () => {
   }
   // Fetch Effects
   useEffect(() => {
-    let user = JSON.parse(localStorage.getItem("user")) || [];
+    let user = JSON.parse(sessionStorage.getItem("user")) || [];
     setUserData(user);
     if (user.role != 2) {
       navigate("/search");

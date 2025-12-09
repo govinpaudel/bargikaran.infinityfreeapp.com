@@ -6,7 +6,7 @@ export default function Navbar() {
   const [userData,setUserData]=useState([]);
 
   useEffect(() => {
-    let user = JSON.parse(localStorage.getItem("user")) || [];
+    let user = JSON.parse(sessionStorage.getItem("user")) || [];
     setUserData(user);
   }, []);  
 

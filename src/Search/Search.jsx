@@ -165,6 +165,7 @@ const Search = () => {
               <th>गा.वि.स</th>
               <th>वडा नं</th>
               <th>कित्ता नं</th>
+              <th>सिट नं</th>
               <th>वर्गिकरण</th>
               <th>कैफियत</th>
             </tr>
@@ -175,6 +176,7 @@ const Search = () => {
                 <td>{i.gabisa_name}</td>
                 <td>{i.ward_no}</td>
                 <td>{i.kitta_no}</td>
+                <td>{i.sheet_no}</td>
                 <td>{i.bargikaran}</td>
                 <td>{i.remarks}</td>
               </tr>
