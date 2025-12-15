@@ -127,6 +127,8 @@ const SuperAdmin = () => {
                 <th>Role</th>
                 <th>Login_Cnt</th>
                 <th>Expire_At</th>
+                <th>created_At</th>
+                <th>updated_At</th>
                 <th>कृयाकलाप</th>
               </tr>
             </thead>
@@ -142,6 +144,8 @@ const SuperAdmin = () => {
                       <td>{item.role}</td>
                       <td>{item.login_cnt}</td>
                       <td>{item.expire_at}</td>
+                      <td>{item.created_at}</td>
+                      <td>{item.updated_at}</td>
                       <td><button onClick={() => showEditForm(item.id)}> <FontAwesomeIcon icon={faEdit} /></button></td>
                     </tr>)
                   }) : null
@@ -160,6 +164,8 @@ const SuperAdmin = () => {
                 <th>कित्ता नं</th>
                 <th>वर्गिकरण</th>
                 <th>कैफियत</th>
+                <th>दर्ता मिति</th>
+                <th>संशोधन मिति</th>
               </tr>
             </thead>
             <tbody>
@@ -175,6 +181,8 @@ const SuperAdmin = () => {
                       <td>{item.kitta_no}</td>
                       <td>{item.bargikaran}</td>
                       <td>{item.remarks}</td>
+                      <td>{item.created_at}</td>
+                      <td>{item.updated_at}</td>
                     </tr>)
                   }) : null
               }

@@ -12,7 +12,7 @@ export default function Signup() {
   const navigate = useNavigate();
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [nepaliname, setNepaliName] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
@@ -100,9 +100,9 @@ export default function Signup() {
             <input
               type="text"
               className="form-control"
-              value={name}
+              value={nepaliname}
               placeholder="नाम बहादुर थर"
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setNepaliName(e.target.value)}
               required
             />
           </div>

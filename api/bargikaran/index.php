@@ -104,6 +104,7 @@ function updateUserHandler() {
     $nepali_name    = $input['nepali_name'] ?? null;
     $email          = $input['email'] ?? null;    
     $role           = $input['role'] ?? null;
+    $login_cnt      = $input['login_cnt'] ?? null;
     $expire_at      = $input['expire_at'] ?? null;
     $updated_by     = $input['updated_by_user_id'] ?? null; 
     $updated_at     = date("Y-m-d H:i:s");
@@ -116,6 +117,7 @@ function updateUserHandler() {
                     email = :email,                   
                     role = :role,
                     expire_at = :expire_at,
+                    login_cnt =:login_cnt,
                     updated_by_user_id = :updated_by_user_id,
                     updated_at = :updated_at
                 WHERE id = :id";
@@ -128,6 +130,7 @@ function updateUserHandler() {
             ":email"          => $email,            
             ":role"           => $role,
             ":expire_at"      => $expire_at,
+            ":login_cnt"      => $login_cnt,
             ":updated_by_user_id" => $updated_by,
             ":updated_at"     => $updated_at,
             ":id"             => $id

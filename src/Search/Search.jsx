@@ -4,14 +4,17 @@ import {
   getNapasByOfficeId,
   getGabisasByNapaId,
   getWardsByGabisaId,
-  getDetailsByKittaNo
+  getDetailsByKittaNo,
+  saveRecords
 } from "../Actions/Action";
 import { useNavigate } from 'react-router-dom';
 import LoadingOverlay from '../Loading/LoadingOverlay';
 import Navbar from '../Navbar/Navbar';
+import { toast } from 'react-toastify';
 
 const Search = () => {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState([]);
   const [offices, setOffices] = useState([]);
   const [napas, setNapas] = useState([]);
   const [gabisas, setGabisas] = useState([]);
@@ -24,6 +27,15 @@ const Search = () => {
   const [details, setDetails] = useState([]);
   const [cnt, setCnt] = useState(0);
   const [loading, setLoading] = useState(false); // Loading state
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  useEffect(() => {
+    const user = sessionStorage.getItem('user');
+    setUserData(JSON.parse(user));
+    console.log(user);
+  }, [])
+
 
   // Generic fetch wrapper to handle loading
   const fetchWithLoading = async (fetchFunc, ...args) => {
@@ -37,7 +49,7 @@ const Search = () => {
     } finally {
       setLoading(false);
     }
-  };  
+  };
   useEffect(() => { fetchOffices(); }, []);
   useEffect(() => { if (office_id > 0) fetchNapas(office_id); }, [office_id]);
   useEffect(() => { if (office_id > 0 && napa_id > 0) fetchGabisas(office_id, napa_id); }, [office_id, napa_id]);
@@ -82,7 +94,24 @@ const Search = () => {
       setCnt(res.data.data1);
     }
   };
+  const handleEditClick = (row) => {
+    setSelectedRow(row); // save row data to populate the form
+    setShowModal(true);  // open modal
+  };
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedRow(null);
+  };
+  const handleSave = async(data) => {
+    const res=await saveRecords(data);
+    console.log(res);
+    if(res.data.status==true){
+      toast.success(res.data.message);
+      handleCloseModal();
+    }
 
+
+  }
   return (
     <section className="container my-4">
       <Navbar />
@@ -168,6 +197,9 @@ const Search = () => {
               <th>सिट नं</th>
               <th>वर्गिकरण</th>
               <th>कैफियत</th>
+              {Number(userData?.role) === 2 ?
+                <th>कृयाकलाप</th>
+                : null}
             </tr>
           </thead>
           <tbody>
@@ -179,6 +211,7 @@ const Search = () => {
                 <td>{i.sheet_no}</td>
                 <td>{i.bargikaran}</td>
                 <td>{i.remarks}</td>
+                {Number(userData?.role) === 2 ? <td><button onClick={() => handleEditClick(i)} className='btn btn-info'>Edit</button></td> : null}
               </tr>
             ))}
           </tbody>
@@ -188,6 +221,101 @@ const Search = () => {
       <h6 className="text-primary text-center">
         यहाँ {cnt} पटक वर्गिकरण खोजि गरिएको छ ।
       </h6>
+      {showModal && selectedRow && (
+        <div className="modal show d-block" tabIndex="-1" role="dialog">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">वर्गिकरण संशोधन</h5>
+                <button type="button" className="btn-close" onClick={handleCloseModal}></button>
+              </div>
+              <div className="modal-body">
+                <form>
+                  <div className="mb-3">
+                    <div className="row">
+                      <div className="col">
+                        <select
+                          className="form-select"
+                          value={selectedRow.office_id}
+                          onChange={(e) => setSelectedRow({ ...selectedRow, office_id: e.target.value })}
+                        >
+                          <option value="0" disabled>--कार्यालय छान्नुहोस्--</option>
+                          {offices.map((o) => (
+                            <option key={o.office_id} value={o.office_id}>{o.office_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col">
+                        <select
+                          className="form-select"
+                          value={selectedRow.napa_id}
+                          onChange={(e) => setSelectedRow({ ...selectedRow, napa_id: e.target.value,napa_name:e.target.options[e.target.selectedIndex].text })}
+                        >
+                          <option value="0" disabled>--पालिका छान्नुहोस्--</option>
+                          {napas.map((n) => (
+                            <option key={n.napa_id} value={n.napa_id}>{n.napa_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <hr/>
+                    <div className="mb-3">
+                    <div className="row">
+                      <div className="col">
+                        <select
+                          className="form-select"
+                          value={selectedRow.gabisa_id}
+                          onChange={(e) => setSelectedRow({ ...selectedRow, gabisa_id: e.target.value,gabisa_name:e.target.options[e.target.selectedIndex].text })}
+                        >
+                          <option value="0" disabled>--गा.वि.स छान्नुहोस्--</option>
+                          {gabisas.map((g) => (
+                            <option key={g.gabisa_id} value={g.gabisa_id}>{g.gabisa_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col">
+                        <select
+                          className="form-select"
+                          value={selectedRow.ward_no}
+                          onChange={(e) => setSelectedRow({ ...selectedRow, ward_no: e.target.value })}
+                        >
+                          <option value="0" disabled>--वडा नं छान्नुहोस्--</option>
+                          {wards.map((w) => (
+                            <option key={w.ward_no} value={w.ward_no}>{w.ward_no}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col">
+                    <input type="text" className="form-control" value={selectedRow.kitta_no} onChange={(e) => setSelectedRow({ ...selectedRow, kitta_no: e.target.value })} />
+                      </div>
+                    </div>
+                    </div>
+                  </div>                  
+                  <div className="mb-3">
+                    <label className="form-label">वर्गिकरण</label>
+                    <input type="text" className="form-control" value={selectedRow.bargikaran} onChange={(e) => setSelectedRow({ ...selectedRow, bargikaran: e.target.value })} />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">कैफियत</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={selectedRow.remarks}
+                      onChange={(e) => setSelectedRow({ ...selectedRow, remarks: e.target.value })}
+                    />
+                  </div>
+                  {/* Add more fields here as needed */}
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-primary" onClick={() => handleSave(selectedRow)}>Save changes</button>
+                <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Close</button>                
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </section>
   );
 };
