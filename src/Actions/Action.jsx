@@ -42,6 +42,12 @@ export const saveRecords = async (data) => {
   return res;
 }
 
+export const listUsers = async () => {
+  const res = await axios.get(`${API_URL}/listusers`);
+  console.log(`${API_URL}/listusers`);
+  return res;
+}
+
 export const downloadRecords = async (data) => {
   const res = await axios.post(`${API_URL}/downloadrecords`, data);
   console.log(`${API_URL}/downloadrecords`, data);

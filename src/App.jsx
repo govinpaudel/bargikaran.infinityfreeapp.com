@@ -9,7 +9,8 @@ import Login from './Login/Login';
 import Signup from './Signup/Signup';
 import Logout from './Logout/Logout';
 import Homepage from './Homepage/Homepage';
-import SuperAdmin from './SuperAdmin/SuperAdmin';
+import ListUser from './SuperAdmin/ListUser';
+import SyncData from './SuperAdmin/SyncData';
 
 function App() {
   return (
@@ -38,13 +39,21 @@ function App() {
           }
         />
         <Route
-          path="/superadmin"
+          path="/listuser"
           element={
             <ProtectedRoute>
-              <SuperAdmin />
+              <ListUser />
             </ProtectedRoute>
           }
-        />         
+        /> 
+         <Route
+          path="/syncdata"
+          element={
+            <ProtectedRoute>
+              <SyncData />
+            </ProtectedRoute>
+          }
+        />          
       </Routes>
     </Router>
   )
