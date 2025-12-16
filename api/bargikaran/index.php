@@ -50,7 +50,11 @@ if ($method === "GET") {
                 $pathParts[4] ?? null,
                 $pathParts[5] ?? null
             );
-            break;        
+            break;
+        case "listusers":
+            listUsersHandler();
+            break;
+
         default:
             notFound();
     }
@@ -155,112 +159,186 @@ function updateUserHandler() {
         ]);
     }
 }
-
-
-
-function downloadRecordsHandler() {
+function listUsersHandler(){
     header("Content-Type: application/json");    
     $pdo = getPDO();
     if (!$pdo) return dbUnavailable("Remote");
+    $stmtUsers = $pdo->prepare("SELECT * FROM brg_users");
+        $stmtUsers->execute();
+        $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
+        // Return both arrays
+        echo json_encode([
+            'status' => true,
+            'users' => $users            
+        ]);
+
+}
+function downloadRecordsHandler() {
+    header("Content-Type: application/json");
+
+    $pdo = getPDO();
+    if (!$pdo) return dbUnavailable("Remote");
+
     // Read JSON POST
     $inputJSON = file_get_contents('php://input');
     $input = json_decode($inputJSON, true);
-    $date = isset($input['date']) ? $input['date'] : '';
 
-    if (!$date) {
+    $date   = $input['date']   ?? '';
+    $tables = $input['tables'] ?? [];
+
+    if (!$date || empty($tables) || !is_array($tables)) {
         echo json_encode([
-            'success' => false,
-            'message' => 'Date is required'
+            'status'  => false,
+            'message' => 'Date and tables are required'
         ]);
         return;
     }
 
     try {
-        // Fetch users updated since date
-        $stmtUsers = $pdo->prepare("SELECT * FROM brg_users WHERE updated_at >= :date");
-        $stmtUsers->execute([':date' => $date]);
-        $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
+        $responseData = [];
 
-        // Fetch details updated since date
-        $stmtDetails = $pdo->prepare("SELECT * FROM brg_details WHERE updated_at >= :date");
-        $stmtDetails->execute([':date' => $date]);
-        $details = $stmtDetails->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($tables as $table) {
 
-        // Return both arrays
+            // 🔐 strict sanitization (letters, numbers, underscore only)
+            $table = str_replace(['`', ';', ' ', '-', '.', '/'], '', $table);
+
+            if ($table === '') {
+                continue;
+            }
+
+            $sql = "
+                SELECT *
+                FROM `$table`
+                WHERE created_at >= :date
+                   OR updated_at >= :date
+            ";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([':date' => $date]);
+
+            $responseData[$table] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
         echo json_encode([
             'status' => true,
-            'users' => $users,
-            'details' => $details
+            'data'   => $responseData
         ]);
 
     } catch (PDOException $e) {
         echo json_encode([
-            'status' => false,
+            'status'  => false,
             'message' => $e->getMessage()
         ]);
     }
 }
-
-
 function saveRecordsHandler() {
-header("Content-Type: application/json");
-$pdo = getPDO();
-if (!$pdo) return dbUnavailable("Remote");
-// Read JSON POST
+    header("Content-Type: application/json");
+    $pdo = getPDO();
+    if (!$pdo) return dbUnavailable("Remote");
+
+    // Read JSON POST
     $inputJSON = file_get_contents('php://input');
     $records = json_decode($inputJSON, true);
 
-    if (!is_array($records) || count($records) === 0) {
-        echo json_encode(['success' => false, 'message' => 'No records received']);
+    if (!$records) {
+        echo json_encode(['status' => false, 'message' => 'No record received']);
         exit;
+    }
+
+    // Wrap single object in array for uniform processing
+    if (!is_array($records) || isset($records['id'])) {
+        $records = [$records];
     }
 
     $now = date('Y-m-d H:i:s');
 
     try {
-        // Prepare INSERT statement
-        $stmt = $pdo->prepare("
-            INSERT INTO brg_details 
-            (office_id, office_name, napa_id, napa_name, gabisa_id, gabisa_name, ward_no,sheet_no, kitta_no, bargikaran, remarks, created_by_user_id, updated_by_user_id, created_at, updated_at)
-            VALUES
-            (:office_id, :office_name, :napa_id, :napa_name, :gabisa_id, :gabisa_name, :ward_no,:ward_no, :kitta_no, :bargikaran, :remarks, :created_by_user_id, :updated_by_user_id, :created_at, :updated_at)
-        ");
+        $savedIds = []; // To return inserted/updated IDs
 
-        // Loop through each record and insert
         foreach ($records as $record) {
-            $office_id   = isset($record['office_id']) ? $record['office_id'] : '';
-            $office_name = isset($record['office_name']) ? $record['office_name'] : '';
-            $napa_id     = isset($record['napa_id']) ? $record['napa_id'] : '';
-            $napa_name   = isset($record['napa_name']) ? $record['napa_name'] : '';
-            $gabisa_id   = isset($record['gabisa_id']) ? $record['gabisa_id'] : '';
-            $gabisa_name = isset($record['gabisa_name']) ? $record['gabisa_name'] : '';
-            $ward_no     = isset($record['ward_no']) ? $record['ward_no'] : '';
-            $kitta_no    = isset($record['kitta_no']) ? $record['kitta_no'] : '';
-            $bargikaran  = isset($record['bargikaran']) ? $record['bargikaran'] : '';
-            $remarks     = isset($record['remarks']) ? $record['remarks'] : '';
-            $user        = isset($record['user']) ? $record['user'] : 0;
+            $id          = isset($record['id']) ? $record['id'] : null;
+            $office_id   = $record['office_id'] ?? '';
+            $office_name = $record['office_name'] ?? '';
+            $napa_id     = $record['napa_id'] ?? '';
+            $napa_name   = $record['napa_name'] ?? '';
+            $gabisa_id   = $record['gabisa_id'] ?? '';
+            $gabisa_name = $record['gabisa_name'] ?? '';
+            $ward_no     = $record['ward_no'] ?? '';
+            $sheet_no    = $record['sheet_no'] ?? '';
+            $kitta_no    = $record['kitta_no'] ?? '';
+            $bargikaran  = $record['bargikaran'] ?? '';
+            $remarks     = $record['remarks'] ?? '';
+            $user        = $record['user'] ?? 0;
 
-            $stmt->execute([
-                ':office_id'           => $office_id,
-                ':office_name'         => $office_name,
-                ':napa_id'             => $napa_id,
-                ':napa_name'           => $napa_name,
-                ':gabisa_id'           => $gabisa_id,
-                ':gabisa_name'         => $gabisa_name,
-                ':ward_no'             => $ward_no,
-                ':kitta_no'            => $kitta_no,
-                ':bargikaran'          => $bargikaran,
-                ':remarks'             => $remarks,
-                ':created_by_user_id'  => $user,
-                ':updated_by_user_id'  => $user,
-                ':created_at'          => $now,
-                ':updated_at'          => $now
-            ]);
+            if ($id) {
+                // UPDATE existing record
+                $stmt = $pdo->prepare("
+                    UPDATE brg_details SET 
+                        office_id = :office_id,
+                        office_name = :office_name,
+                        napa_id = :napa_id,
+                        napa_name = :napa_name,
+                        gabisa_id = :gabisa_id,
+                        gabisa_name = :gabisa_name,
+                        ward_no = :ward_no,
+                        sheet_no = :sheet_no,
+                        kitta_no = :kitta_no,
+                        bargikaran = :bargikaran,
+                        remarks = :remarks,
+                        updated_by_user_id = :updated_by_user_id,
+                        updated_at = :updated_at
+                    WHERE id = :id
+                ");
+                $stmt->execute([
+                    ':office_id'          => $office_id,
+                    ':office_name'        => $office_name,
+                    ':napa_id'            => $napa_id,
+                    ':napa_name'          => $napa_name,
+                    ':gabisa_id'          => $gabisa_id,
+                    ':gabisa_name'        => $gabisa_name,
+                    ':ward_no'            => $ward_no,
+                    ':sheet_no'           => $sheet_no,
+                    ':kitta_no'           => $kitta_no,
+                    ':bargikaran'         => $bargikaran,
+                    ':remarks'            => $remarks,
+                    ':updated_by_user_id' => $user,
+                    ':updated_at'         => $now,
+                    ':id'                 => $id
+                ]);
+                $savedIds[] = $id;
+            } else {
+                // INSERT new record
+                $stmt = $pdo->prepare("
+                    INSERT INTO brg_details 
+                        (office_id, office_name, napa_id, napa_name, gabisa_id, gabisa_name, ward_no, sheet_no, kitta_no, bargikaran, remarks, created_by_user_id, updated_by_user_id, created_at, updated_at)
+                    VALUES
+                        (:office_id, :office_name, :napa_id, :napa_name, :gabisa_id, :gabisa_name, :ward_no, :sheet_no, :kitta_no, :bargikaran, :remarks, :created_by_user_id, :updated_by_user_id, :created_at, :updated_at)
+                ");
+                $stmt->execute([
+                    ':office_id'          => $office_id,
+                    ':office_name'        => $office_name,
+                    ':napa_id'            => $napa_id,
+                    ':napa_name'          => $napa_name,
+                    ':gabisa_id'          => $gabisa_id,
+                    ':gabisa_name'        => $gabisa_name,
+                    ':ward_no'            => $ward_no,
+                    ':sheet_no'           => $sheet_no,
+                    ':kitta_no'           => $kitta_no,
+                    ':bargikaran'         => $bargikaran,
+                    ':remarks'            => $remarks,
+                    ':created_by_user_id' => $user,
+                    ':updated_by_user_id' => $user,
+                    ':created_at'         => $now,
+                    ':updated_at'         => $now
+                ]);
+                $savedIds[] = $pdo->lastInsertId();
+            }
         }
 
         echo json_encode([
             'status' => true,
-            'message' => count($records) . ' वर्गिकरण सफलतापुर्वक सेभ भयो ।'
+            'message' => count($records) . ' वर्गिकरण सफलतापुर्वक सेभ भयो ।',
+            'savedIds' => $savedIds
         ]);
 
     } catch (PDOException $e) {
@@ -270,45 +348,60 @@ if (!$pdo) return dbUnavailable("Remote");
         ]);
     }
 }
+function signupHandler() {
+    header("Content-Type: application/json");
+    $pdo = getPDO();
+    if (!$pdo) return dbUnavailable("Remote");
 
-function signupHandler(){
-header("Content-Type: application/json");
-$pdo = getPDO();
-if (!$pdo) return dbUnavailable("Remote");
-// Read JSON POST
+    // Read JSON POST
     $inputJSON = file_get_contents('php://input');
     $input = json_decode($inputJSON, true);
-    $mobile   = isset($input['mobile'])   ? $input['mobile']   : '';
-    $email    = isset($input['email'])    ? $input['email']    : '';
-    $nepali_name    = isset($input['nepali_name'])    ? $input['nepali_name']    : '';
-    $password = isset($input['password']) ? $input['password'] : '';
-    $deviceToken = isset($input['device_token']) ? $input['device_token'] : '';
-// Hash password
-$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-$checkStmt = $pdo->prepare("SELECT id FROM brg_users WHERE mobileno = ?");
-        $checkStmt->execute([$mobile]);
-        $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($existing) {
-            echo json_encode(["success" => false, "message" => "यो नं पहिला नै दर्ता भई सकेको छ"]);
-            return;
-        }
+    $mobile       = $input['mobile'] ?? '';
+    $email        = $input['email'] ?? '';
+    $nepali_name  = $input['nepali_name'] ?? '';
+    $password     = $input['password'] ?? '';
+    $deviceToken  = $input['device_token'] ?? '';
 
-        // Insert new user
-        $insertStmt = $pdo->prepare(
-            "INSERT INTO brg_users (mobileno, email,nepali_name,password,device_token) VALUES (?, ?, ?,?)"
-        );
+    // Hash password
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        $insertResult = $insertStmt->execute([$mobile, $email,$nepali_name,$hashedPassword,$deviceToken]);
+    // Check if mobile already exists
+    $checkStmt = $pdo->prepare("SELECT id FROM brg_users WHERE mobileno = ?");
+    $checkStmt->execute([$mobile]);
+    $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($insertResult) {
-            echo json_encode(["success" => true, "message" => "सफलतापुर्वक दर्ता भयो ।"]);
-        } else {
-            echo json_encode(["success" => false, "message" => "Database insert failed"]);
-        }
+    if ($existing) {
+        echo json_encode([
+            "success" => false,
+            "message" => "यो नं पहिला नै दर्ता भई सकेको छ"
+        ]);
+        return;
+    }
 
+    // Set expire_at to yesterday
+    $expire_at = date('Y-m-d', strtotime('-1 day'));
+
+    // Insert new user
+    $insertStmt = $pdo->prepare(
+        "INSERT INTO brg_users (mobileno, email, nepali_name, password, device_token, expire_at) 
+         VALUES (?, ?, ?, ?, ?, ?)"
+    );
+
+    $insertResult = $insertStmt->execute([$mobile, $email, $nepali_name, $hashedPassword, $deviceToken, $expire_at]);
+
+    if ($insertResult) {
+        echo json_encode([
+            "success" => true,
+            "message" => "सफलतापुर्वक दर्ता भयो ।"
+        ]);
+    } else {
+        echo json_encode([
+            "success" => false,
+            "message" => "Database insert failed"
+        ]);
+    }
 }
-
 function loginHandler() {
     header("Content-Type: application/json");
 
@@ -336,37 +429,39 @@ function loginHandler() {
 
     try {
         // Fetch user by mobileno
-        $stmt = $pdo->prepare("SELECT id,nepali_name, mobileno, email, password, role, expire_at, device_token, login_cnt FROM brg_users WHERE mobileno = ?");
+        $stmt = $pdo->prepare("SELECT id, nepali_name, mobileno, email, password, role, expire_at, device_token, login_cnt FROM brg_users WHERE mobileno = ?");
         $stmt->execute([$mobileno]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if (!$user || !password_verify($password, $user['password'])) {
             echo json_encode(["success" => false, "message" => "प्रयोगकर्ता वा पासवर्ड मिलेन"]);
             return;
         }
-        // Check if account is expired
-        $now = new DateTime();
+
+        // Check if account is expired (allow login if expire_at is today or future)
+        $today = new DateTime('today');
         $expireAt = new DateTime($user['expire_at']);
-        if ($expireAt < $now) {
+        if ($expireAt < $today) {
             echo json_encode(["success" => false, "message" => "प्रयोगकर्ताको नविकरण भएको छैन। कृपया 9846805409 मा सम्पर्क राख्नुहोला ।"]);
             return;
         }
-        
+
         if($user['role'] != 1){
-        // Device token check
-        if ($user['login_cnt'] == 0) {
-            // First login → save device_token and increment login_cnt
-            if ($device_token) {
-                $update = $pdo->prepare("UPDATE brg_users SET device_token=?, login_cnt=1 WHERE id=?");
-                $update->execute([$device_token, $user['id']]);
+            // Device token check
+            if ($user['login_cnt'] == 0) {
+                // First login → save device_token and increment login_cnt
+                if ($device_token) {
+                    $update = $pdo->prepare("UPDATE brg_users SET device_token=?, login_cnt=1 WHERE id=?");
+                    $update->execute([$device_token, $user['id']]);
+                }
+            } else {
+                // Subsequent logins → must match device_token
+                if (!$device_token || $user['device_token'] !== $device_token) {
+                    echo json_encode(["success" => false, "message" => "यो प्रयोगकर्ता पहिले नै अर्को यन्त्रबाट प्रयोग गरिएको छ।"]);
+                    return;
+                }          
             }
-        } else {
-            // Subsequent logins → must match device_token
-           if (!$device_token || $user['device_token'] !== $device_token) {
-                echo json_encode(["success" => false, "message" => "यो प्रयोगकर्ता पहिले नै अर्को यन्त्रबाट प्रयोग गरिएको छ।"]);
-                return;
-            }          
         }
-    }
 
         // Login success
         echo json_encode([
@@ -386,9 +481,6 @@ function loginHandler() {
         respondDbError($e);
     }
 }
-
-
-
 function getAllOfficesHandler() {
     $pdo = getPDO();
     if (!$pdo) return dbUnavailable("Remote");    
@@ -410,7 +502,6 @@ function getAllOfficesHandler() {
         respondDbError($e);
     }
 }
-
 function getNapasByOfficeIdHandler($office_id) {
      $pdo = getPDO();
     if (!$pdo) return dbUnavailable("Remote");
@@ -426,7 +517,6 @@ function getNapasByOfficeIdHandler($office_id) {
         respondDbError($e);
     }
 }
-
 function getGabisasByNapaIdHandler($office_id, $napa_id) {
      $pdo = getPDO();
     if (!$pdo) return dbUnavailable("Remote");
@@ -442,7 +532,6 @@ function getGabisasByNapaIdHandler($office_id, $napa_id) {
         respondDbError($e);
     }
 }
-
 function getWardsByGabisaIdHandler($office_id, $napa_id, $gabisa_id) {
      $pdo = getPDO();
     if (!$pdo) return dbUnavailable("Remote");
@@ -458,7 +547,6 @@ function getWardsByGabisaIdHandler($office_id, $napa_id, $gabisa_id) {
         respondDbError($e);
     }
 }
-
 function getDetailsByKittaNoHandler($office_id, $napa_id, $gabisa_id, $ward_no, $kitta_no) {
     $pdo = getPDO();
     if (!$pdo) return dbUnavailable("Remote");
