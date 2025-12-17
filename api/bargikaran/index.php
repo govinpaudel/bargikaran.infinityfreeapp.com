@@ -416,6 +416,7 @@ function loginHandler() {
     $mobileno    = isset($input['mobileno']) ? $input['mobileno'] : (isset($input['username']) ? $input['username'] : '');
     $password    = isset($input['password']) ? $input['password'] : '';
     $device_token = isset($input['device_token']) ? $input['device_token'] : null;
+    $last_login =   isset($input['last_login']) ? $input['last_login'] : null;
 
     // Validation
     if (!preg_match('/^9\d{9}$/', $mobileno)) {
@@ -473,7 +474,8 @@ function loginHandler() {
                 "mobileno" => $user['mobileno'],
                 "email" => $user['email'],
                 "role" => $user['role'],
-                "expire_at" => $user['expire_at']
+                "expire_at" => $user['expire_at'],
+                "last_login" => $last_login
             ]
         ]);
 
