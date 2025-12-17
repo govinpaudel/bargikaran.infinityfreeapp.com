@@ -147,11 +147,11 @@ const handleSubmit = async (e) => {
                   </div>
                   <div className="mb-3">
                     <label className="form-label">लगईन अवस्था</label>
-                    <input type="number" name='login_cnt' value={selectedRow.login_cnt} onChange={(e) => setSelectedRow({ ...selectedRow, role: e.target.value })} className="form-control" />
+                    <input type="number" name='login_cnt' value={selectedRow.login_cnt} onChange={(e) => setSelectedRow({ ...selectedRow, login_cnt: e.target.value })} className="form-control" />
                   </div>
                   <div className="mb-3">
                     <label className="form-label">अन्तिम मिति</label>
-                    <input type="text" name='expire_at' value={selectedRow.expire_at} onChange={(e) => setSelectedRow({ ...selectedRow, role: e.target.value })} className="form-control" />
+                    <input type="text" name='expire_at' value={selectedRow.expire_at} onChange={(e) => setSelectedRow({ ...selectedRow, expire_at: e.target.value })} className="form-control" />
                   </div>
                   <button type="submit" className="btn btn-success">
                     सेभ गर्नुहोस्

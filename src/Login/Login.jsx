@@ -8,10 +8,10 @@ import { v4 as uuidv4 } from "uuid";
 
 export default function Login() {
   let device_token = localStorage.getItem("device_token");
-    if (!device_token) {
-      device_token = uuidv4();
-      localStorage.setItem("device_token", device_token);
-    }
+  if (!device_token) {
+    device_token = uuidv4();
+    localStorage.setItem("device_token", device_token);
+  }
   const { login } = useAuth();
   const navigate = useNavigate()
   const [username, setUsername] = useState("");
@@ -21,11 +21,11 @@ export default function Login() {
 
   useEffect(() => {
     const user = sessionStorage.getItem("user");
-  if (user) {
-    navigate("/search");
-  }
+    if (user) {
+      navigate("/search");
+    }
   }, [])
-  
+
 
 
   const handleSubmit = async (e) => {
@@ -39,10 +39,12 @@ export default function Login() {
     }
 
     try {
+      const today = new Date().toISOString().split('T')[0];
       const data = {
         username: username,
         password: password,
-        device_token:device_token
+        device_token: device_token,
+        last_login: today
       }
       const res = await handleLogin(data);
       console.log(res);

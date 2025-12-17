@@ -20,7 +20,7 @@ export default function Navbar() {
         <div className="container-fluid">
           <span className="navbar-brand">वर्गिकरण व्यवस्थापन प्रणाली</span>
           <span className="ms-2 text-white">
-            ( {userData.nepali_name} )
+            ( {userData.nepali_name ? userData.nepali_name: 'गेष्ट प्रयोगकर्ता'} )
           </span>
 
           <button
@@ -33,6 +33,7 @@ export default function Navbar() {
           </button>
 
           <div className="collapse navbar-collapse" id="mainNavbar">
+            {userData.role != null?            
             <div className="ms-auto dropdown">
               <button
                 className="btn btn-light dropdown-toggle"
@@ -40,10 +41,12 @@ export default function Navbar() {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                {userData.role === 1 ?
-                'सुपर एडमिन' : 'एडमिन'}
-              </button>
 
+  { userData.role === 1
+    ? 'सुपर एडमिन'
+    : 'एडमिन'}
+  
+              </button>
               <ul className="dropdown-menu dropdown-menu-end">
                 <li>
                   <button
@@ -87,17 +90,17 @@ export default function Navbar() {
                 )}
 
                 <li><hr className="dropdown-divider" /></li>
-
-                <li>
+                {userData.role ? (<li>
                   <button
                     className="dropdown-item text-danger"
                     onClick={handleLogout}
                   >
                     🚪 लगआउट
                   </button>
-                </li>
+                </li>):null}
               </ul>
             </div>
+: null}
           </div>
         </div>
       </nav>
