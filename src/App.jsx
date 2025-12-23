@@ -11,6 +11,7 @@ import Logout from './Logout/Logout';
 import Homepage from './Homepage/Homepage';
 import ListUser from './SuperAdmin/ListUser';
 import SyncData from './SuperAdmin/SyncData';
+import UploadExcel from './SuperAdmin/UploadExcel';
 
 function App() {
   return (
@@ -53,7 +54,15 @@ function App() {
               <SyncData />
             </ProtectedRoute>
           }
-        />          
+        />
+        <Route
+          path="/uploadexcel"
+          element={
+            <ProtectedRoute>
+              <UploadExcel />
+            </ProtectedRoute>
+          }
+        />         
       </Routes>
     </Router>
   )

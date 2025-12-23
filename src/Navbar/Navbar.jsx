@@ -87,6 +87,18 @@ export default function Navbar() {
                       🔄 डाटा सिङ्क
                     </button>
                   </li>
+                  
+                )}
+                {userData.role === 1 && (
+                  <li>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => navigate("/uploadexcel")}
+                    >
+                      🔄 अपलोड Excel
+                    </button>
+                  </li>
+                  
                 )}
 
                 <li><hr className="dropdown-divider" /></li>

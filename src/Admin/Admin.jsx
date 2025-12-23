@@ -81,11 +81,14 @@ const Admin = () => {
       setLoading(true);
       let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
       kittas = kittas.filter(o => o.id == id);
-      const res = await saveRecords(kittas);
-      if(res.data.status==true){
+      const payload = {
+        records: kittas
+      };
+      const res = await saveRecords(payload);
+      if (res.data.status == true) {
         toast.success(res.data.message);
         handleDelete(id);
-      }     
+      }
 
     } catch (err) {
       console.error(err);
@@ -110,58 +113,58 @@ const Admin = () => {
   useEffect(() => { if (data.office_id > 0 && data.napa_id > 0 && data.gabisa_id > 0) fetchWards(); }, [data.office_id, data.napa_id, data.gabisa_id]);
 
   const handleSave = () => {
-  let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
+    let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
 
-  // Split comma separated kitta numbers from input
-  const kittaList = data.kitta_no
-    .split(",")
-    .map(k => k.trim())
-    .filter(k => k !== "");
+    // Split comma separated kitta numbers from input
+    const kittaList = data.kitta_no
+      .split(",")
+      .map(k => k.trim())
+      .filter(k => k !== "");
 
-  // --- DUPLICATE CHECK ---
-  const existingKittas = kittas.map(k => k.kitta_no.toString().trim());
+    // --- DUPLICATE CHECK ---
+    const existingKittas = kittas.map(k => k.kitta_no.toString().trim());
 
-  // Find duplicates before inserting
-  const duplicates = kittaList.filter(k => existingKittas.includes(k));
+    // Find duplicates before inserting
+    const duplicates = kittaList.filter(k => existingKittas.includes(k));
 
-  if (duplicates.length > 0) {
-    alert(`These Kitta Numbers Already Exist: ${duplicates.join(", ")}`);
-    return;  // Stop saving
-  }
-
-  // --- UPDATE MODE (single record edit) ---
-  if (data.id > 0) {
-    const index = kittas.findIndex(o => o.id === data.id);
-    if (index !== -1) {
-      kittas[index] = { ...data };  
+    if (duplicates.length > 0) {
+      alert(`These Kitta Numbers Already Exist: ${duplicates.join(", ")}`);
+      return;  // Stop saving
     }
+
+    // --- UPDATE MODE (single record edit) ---
+    if (data.id > 0) {
+      const index = kittas.findIndex(o => o.id === data.id);
+      if (index !== -1) {
+        kittas[index] = { ...data };
+      }
+
+      localStorage.setItem("kittas", JSON.stringify(kittas));
+      setLocalDetails(kittas);
+      setData(defaultData);
+      return;
+    }
+
+    // --- INSERT MODE (multiple kitta insert) ---
+    kittaList.forEach((kittaValue) => {
+      const newId = kittas.length > 0
+        ? kittas[kittas.length - 1].id + 1
+        : 1;
+
+      const newRecord = {
+        ...data,
+        id: newId,
+        user: userData.id,
+        kitta_no: kittaValue   // store single kitta number
+      };
+
+      kittas.push(newRecord);
+    });
 
     localStorage.setItem("kittas", JSON.stringify(kittas));
     setLocalDetails(kittas);
     setData(defaultData);
-    return;
-  }
-
-  // --- INSERT MODE (multiple kitta insert) ---
-  kittaList.forEach((kittaValue) => {
-    const newId = kittas.length > 0
-      ? kittas[kittas.length - 1].id + 1
-      : 1;
-
-    const newRecord = {
-      ...data,
-      id: newId,
-      user: userData.id,
-      kitta_no: kittaValue   // store single kitta number
-    };
-
-    kittas.push(newRecord);
-  });
-
-  localStorage.setItem("kittas", JSON.stringify(kittas));
-  setLocalDetails(kittas);
-  setData(defaultData);
-};
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
