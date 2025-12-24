@@ -104,48 +104,38 @@ const UploadExcel = () => {
   const currentData = data.slice(startIndex, startIndex + RECORDS_PER_PAGE);
 
   return (
-  <div className="container-fluid p-3">
-   <Navbar/>
-    <h2 className="mb-3">Excel Upload & Preview</h2>
-
-    <div className="row g-3">
-      {/* LEFT COLUMN */}
-      <div className="col-md-3">
-        <div className="card">
-          <div className="card-body">
-            <h5 className="card-title">File Selection</h5>
-
-            <input
-              type="file"
-              className="form-control"
-              accept=".xlsx,.xls"
-              onChange={handleFileChange}
-            />
-
-            {sheetNames.length > 0 && (
-              <div className="mt-3">
-                <label className="form-label">Sheet</label>
-                <select
-                  className="form-select"
-                  value={selectedSheet}
-                  onChange={(e) => handleSheetSelect(e.target.value)}
-                >
-                  <option value="">-- Select Sheet --</option>
-                  {sheetNames.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
+    <div className="container-fluid p-3">
+      <Navbar />
+      <h2 className="mb-3">Excel Upload & Preview</h2>
+      <div className="row">
+        <div className="col">
+          <input
+            type="file"
+            className="form-control"
+            accept=".xlsx,.xls"
+            onChange={handleFileChange}
+          />
         </div>
-      </div>
+        <div className="col">
+          {sheetNames.length > 0 && (
+            
+              <select
+                className="form-select"
+                value={selectedSheet}
+                onChange={(e) => handleSheetSelect(e.target.value)}
+              >
+                <option value="">-- Select Sheet --</option>
+                {sheetNames.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            
+          )}
+        </div>
+        <div className="col">
 
-      {/* RIGHT COLUMN */}
-      <div className="col-md-9">
-        <div className="d-flex justify-content-end mb-2">
           <button
             className="btn btn-primary"
             onClick={uploadToServer}
@@ -153,9 +143,17 @@ const UploadExcel = () => {
           >
             {uploading ? "Uploading..." : "Upload to Server"}
           </button>
-        </div>
 
-        {/* UPLOAD PROGRESS */}
+        </div>
+      </div>
+      {loading && (
+        <div className="text-center py-5 fw-bold">
+          Loading Excel data...
+        </div>
+      )}
+
+      <div className="row">
+
         {uploading && (
           <div className="mb-3">
             <div className="progress" style={{ height: 20 }}>
@@ -168,15 +166,8 @@ const UploadExcel = () => {
             </div>
           </div>
         )}
-
-        {/* LOADING */}
-        {loading && (
-          <div className="text-center py-5 fw-bold">
-            Loading Excel data...
-          </div>
-        )}
-
-        {/* TABLE */}
+      </div>
+      <div className="row">
         {!loading && data.length > 0 && (
           <>
             <div className="table-responsive">
@@ -226,8 +217,7 @@ const UploadExcel = () => {
         )}
       </div>
     </div>
-  </div>
-);
+  );
 
 };
 

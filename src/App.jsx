@@ -4,6 +4,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute/ProtectedRoute';
 import Search from './search/Search';
+import SearchBargikaran from './Search/SearchBargikaran';
 import Admin from './Admin/Admin';
 import Login from './Login/Login';
 import Signup from './Signup/Signup';
@@ -22,7 +23,7 @@ function App() {
         <Route path="/login" element={<Login />} />  
         <Route path="/signup" element={<Signup />} />
         <Route path="/logout" element={<Logout />} />
-        <Route path="/searchbargikaran" element={<Search />} />
+        <Route path="/searchbargikaran" element={<SearchBargikaran />} />
         <Route
           path="/search"
           element={

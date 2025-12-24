@@ -75,6 +75,9 @@ if ($method === "GET") {
         case "updateuser":
             updateUserHandler();
             break;
+        case "resetpassword":
+            resetPasswordHandler();
+            break;
         default:
             methodNotAllowed();
     }
@@ -232,48 +235,57 @@ function downloadRecordsHandler() {
     }
 }
 function saveRecordsHandler() {
-    header("Content-Type: application/json");
+    header("Content-Type: application/json; charset=UTF-8");
+
     $pdo = getPDO();
-    if (!$pdo) return dbUnavailable("Remote");
+    if (!$pdo) {
+        echo json_encode(['status' => false, 'message' => 'Database unavailable']);
+        return;
+    }
 
-    // Read JSON POST
+    // Read JSON input
     $inputJSON = file_get_contents('php://input');
-    $records = json_decode($inputJSON, true);
+    $input = json_decode($inputJSON, true);
 
-    if (!$records) {
-        echo json_encode(['status' => false, 'message' => 'No record received']);
-        exit;
+    // Validate payload
+    if (!isset($input['records']) || !is_array($input['records'])) {
+        echo json_encode([
+            'status' => false,
+            'message' => 'Invalid request format. records[] missing.'
+        ]);
+        return;
     }
 
-    // Wrap single object in array for uniform processing
-    if (!is_array($records) || isset($records['id'])) {
-        $records = [$records];
-    }
-
+    $records = $input['records'];
     $now = date('Y-m-d H:i:s');
 
     try {
-        $savedIds = []; // To return inserted/updated IDs
+        // Begin transaction
+        $pdo->beginTransaction();
+
+        $savedIds = [];
 
         foreach ($records as $record) {
-            $id          = isset($record['id']) ? $record['id'] : null;
-            $office_id   = $record['office_id'] ?? '';
-            $office_name = $record['office_name'] ?? '';
-            $napa_id     = $record['napa_id'] ?? '';
-            $napa_name   = $record['napa_name'] ?? '';
-            $gabisa_id   = $record['gabisa_id'] ?? '';
-            $gabisa_name = $record['gabisa_name'] ?? '';
-            $ward_no     = $record['ward_no'] ?? '';
-            $sheet_no    = $record['sheet_no'] ?? '';
-            $kitta_no    = $record['kitta_no'] ?? '';
-            $bargikaran  = $record['bargikaran'] ?? '';
-            $remarks     = $record['remarks'] ?? '';
+
+            // Extract values safely
+            $id          = $record['id'] ?? null;
+            $office_id   = $record['office_id'] ?? null;
+            $office_name = $record['office_name'] ?? null;
+            $napa_id     = $record['napa_id'] ?? null;
+            $napa_name   = $record['napa_name'] ?? null;
+            $gabisa_id   = $record['gabisa_id'] ?? null;
+            $gabisa_name = $record['gabisa_name'] ?? null;
+            $ward_no     = $record['ward_no'] ?? null;
+            $sheet_no    = $record['sheet_no'] ?? null;
+            $kitta_no    = $record['kitta_no'] ?? null;
+            $bargikaran  = $record['bargikaran'] ?? null;
+            $remarks     = $record['remarks'] ?? null;
             $user        = $record['user'] ?? 0;
 
             if ($id) {
-                // UPDATE existing record
+                // UPDATE
                 $stmt = $pdo->prepare("
-                    UPDATE brg_details SET 
+                    UPDATE brg_details SET
                         office_id = :office_id,
                         office_name = :office_name,
                         napa_id = :napa_id,
@@ -289,6 +301,7 @@ function saveRecordsHandler() {
                         updated_at = :updated_at
                     WHERE id = :id
                 ");
+
                 $stmt->execute([
                     ':office_id'          => $office_id,
                     ':office_name'        => $office_name,
@@ -305,15 +318,31 @@ function saveRecordsHandler() {
                     ':updated_at'         => $now,
                     ':id'                 => $id
                 ]);
+
                 $savedIds[] = $id;
+
             } else {
-                // INSERT new record
+                // INSERT
                 $stmt = $pdo->prepare("
-                    INSERT INTO brg_details 
-                        (office_id, office_name, napa_id, napa_name, gabisa_id, gabisa_name, ward_no, sheet_no, kitta_no, bargikaran, remarks, created_by_user_id, updated_by_user_id, created_at, updated_at)
-                    VALUES
-                        (:office_id, :office_name, :napa_id, :napa_name, :gabisa_id, :gabisa_name, :ward_no, :sheet_no, :kitta_no, :bargikaran, :remarks, :created_by_user_id, :updated_by_user_id, :created_at, :updated_at)
+                    INSERT INTO brg_details (
+                        office_id, office_name,
+                        napa_id, napa_name,
+                        gabisa_id, gabisa_name,
+                        ward_no, sheet_no, kitta_no,
+                        bargikaran, remarks,
+                        created_by_user_id, updated_by_user_id,
+                        created_at, updated_at
+                    ) VALUES (
+                        :office_id, :office_name,
+                        :napa_id, :napa_name,
+                        :gabisa_id, :gabisa_name,
+                        :ward_no, :sheet_no, :kitta_no,
+                        :bargikaran, :remarks,
+                        :created_by_user_id, :updated_by_user_id,
+                        :created_at, :updated_at
+                    )
                 ");
+
                 $stmt->execute([
                     ':office_id'          => $office_id,
                     ':office_name'        => $office_name,
@@ -331,23 +360,33 @@ function saveRecordsHandler() {
                     ':created_at'         => $now,
                     ':updated_at'         => $now
                 ]);
+
                 $savedIds[] = $pdo->lastInsertId();
             }
         }
 
+        // Commit transaction
+        $pdo->commit();
+
         echo json_encode([
-            'status' => true,
-            'message' => count($records) . ' वर्गिकरण सफलतापुर्वक सेभ भयो ।',
+            'status'   => true,
+            'message'  => count($records) . ' वर्गिकरण सफलतापूर्वक सेभ भयो ।',
             'savedIds' => $savedIds
         ]);
 
     } catch (PDOException $e) {
+        // Rollback on error
+        $pdo->rollBack();
+
         echo json_encode([
-            'status' => false,
-            'message' => $e->getMessage()
+            'status'  => false,
+            'message' => 'Database error',
+            'error'   => $e->getMessage()
         ]);
     }
 }
+
+
 function signupHandler() {
     header("Content-Type: application/json");
     $pdo = getPDO();
@@ -359,7 +398,7 @@ function signupHandler() {
 
     $mobile       = $input['mobile'] ?? '';
     $email        = $input['email'] ?? '';
-    $nepali_name  = $input['nepali_name'] ?? '';
+    $nepali_name  = $input['nepaliname'] ?? '';
     $password     = $input['password'] ?? '';
     $deviceToken  = $input['device_token'] ?? '';
 
@@ -575,7 +614,55 @@ function getDetailsByKittaNoHandler($office_id, $napa_id, $gabisa_id, $ward_no, 
         respondDbError($e);
     }
 }
+function resetPasswordHandler() {
+    header("Content-Type: application/json; charset=utf-8");
 
+    $pdo = getPDO();
+    if (!$pdo) return dbUnavailable("Remote");
+
+    // Read JSON POST
+    $input = json_decode(file_get_contents("php://input"), true);
+
+    
+    $id = $input["id"] ?? null;
+
+    if (!$id) {
+        echo json_encode([
+            "status" => false,
+            "message" => "आवश्यक विवरणहरू उपलब्ध छैनन् ।"
+        ], JSON_UNESCAPED_UNICODE);
+        return;
+    }
+
+    $newPassword = "123456";
+    $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+
+    try {
+        $sql = "
+            UPDATE brg_users 
+            SET password = :password,
+            login_cnt=0
+            WHERE id = :id
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ":password" => $hash,           
+            ":id" => $id
+        ]);
+
+        echo json_encode([
+            "status" => true,
+            "message" => "प्रयोगकर्ताको पासवर्ड {$newPassword} अपडेट भयो",
+            "data" => [
+                "user_id" => $id
+            ]
+        ], JSON_UNESCAPED_UNICODE);
+
+    } catch (PDOException $e) {
+        respondDbError($e);
+    }
+}
 
 
 function notFound() { http_response_code(404); echo json_encode(["status"=>false,"message"=>"Not Found"]); exit(); }

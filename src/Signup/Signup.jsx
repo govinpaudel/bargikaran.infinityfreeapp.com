@@ -43,7 +43,7 @@ export default function Signup() {
     }
 
     try {
-      const data = { mobile, email,name , password,device_token };
+      const data = { mobile, email,nepaliname , password,device_token };
       const res = await handleSignup(data);
       if (res.data.success) {
         setSuccess("साइनअप सफल भयो!");
