@@ -31,7 +31,7 @@ const Search = () => {
   const [selectedRow, setSelectedRow] = useState(null);
 
   useEffect(() => {
-    const user = sessionStorage.getItem('user');
+    const user = localStorage.getItem('user');
     setUserData(JSON.parse(user));
     console.log(user);
   }, [])

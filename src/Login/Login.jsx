@@ -48,6 +48,12 @@ export default function Login() {
       }
       const res = await handleLogin(data);
       console.log(res);
+      // 🔴 IMPORTANT: Detect InfinityFree HTML response
+      if (typeof res.data === "string") {
+        toast.error("सुरक्षा जाँच भइरहेको छ, कृपया पुनः प्रयास गर्नुहोस्।");
+        window.location.reload();
+        return;
+      }
       if (res.data.success) {
         toast.success(res.data.message);
         login(res.data.data); // login function from context

@@ -7,12 +7,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const logout = () => {
-    sessionStorage.removeItem("user");
+    localStorage.removeItem("user");
     setUser(null);
   };
 
   useEffect(() => {
-    const storedUser = sessionStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
 
     if (!storedUser) {
       setLoading(false);
@@ -23,20 +23,10 @@ export const AuthProvider = ({ children }) => {
       const parsedUser = JSON.parse(storedUser);
 
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // normalize
-
-      const lastLoginDate = new Date(parsedUser.last_login);
-      lastLoginDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
 
       const expireDate = new Date(parsedUser.expire_at);
       expireDate.setHours(0, 0, 0, 0);
-
-      // ❌ Last login expired (today > last_login)
-      if (today > lastLoginDate) {
-        logout();
-        setLoading(false);
-        return;
-      }
 
       // ❌ Account expired
       if (today > expireDate) {
@@ -45,10 +35,10 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // ✅ Valid user
+      // ✅ User valid
       setUser(parsedUser);
     } catch (err) {
-      console.error("Invalid session user", err);
+      console.error("Invalid stored user", err);
       logout();
     }
 
@@ -56,7 +46,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
-    sessionStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
 
