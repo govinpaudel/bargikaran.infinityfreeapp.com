@@ -10,12 +10,12 @@ import LoadingOverlay from '../Loading/LoadingOverlay';
 const SyncData = () => {
   const navigate = useNavigate();
   const [ddate, setDdate] = useState("");
-  const [ip, setIp] = useState()
+  const [ip, setIp] = useState('127.0.0.1')
   const [data, setData] = useState([]);
   const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-    let user = JSON.parse(sessionStorage.getItem("user")) || [];
+    let user = JSON.parse(localStorage.getItem("user")) || [];
     setUserData(user);
     if (user.role != 1) {
       navigate("/search")

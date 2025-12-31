@@ -97,7 +97,7 @@ const Admin = () => {
   }
   // Fetch Effects
   useEffect(() => {
-    let user = JSON.parse(sessionStorage.getItem("user")) || [];
+    let user = JSON.parse(localStorage.getItem("user")) || [];
     setUserData(user);
     if (user.role != 2) {
       navigate("/search");
@@ -113,6 +113,38 @@ const Admin = () => {
   useEffect(() => { if (data.office_id > 0 && data.napa_id > 0 && data.gabisa_id > 0) fetchWards(); }, [data.office_id, data.napa_id, data.gabisa_id]);
 
   const handleSave = () => {
+      if(data.office_id===0){
+        toast.warning('कृपया कार्यालय छान्नुहोस्')
+        return;
+      }
+      if(data.napa_id===0){
+        toast.warning('कृपया पालिका छान्नुहोस्')
+        return;
+      }
+    if(data.gabisa_id===0){
+        toast.warning('कृपया गा.वि.स छान्नुहोस्')
+        return;
+      }
+      if(data.ward_no===0){
+        toast.warning('कृपया वडा.नं छान्नुहोस्')
+        return;
+      }
+      if(data.kitta_no===0 ||data.kitta_no.length===0){
+        toast.warning('कृपया कित्ता नं छान्नुहोस्')
+        return;
+      }
+      if(data.kitta_no===0 ||data.kitta_no.length===0){
+        toast.warning('कृपया कित्ता नं छान्नुहोस्')
+        return;
+      }
+      if(data.bargikaran.length===0){
+        toast.warning('कृपया वर्गिकरण छान्नुहोस्')
+        return;
+      }
+       if(data.remarks.length===0){
+        toast.warning('कृपया कैफियत छान्नुहोस्')
+        return;
+      }
     let kittas = JSON.parse(localStorage.getItem("kittas")) || [];
 
     // Split comma separated kitta numbers from input
